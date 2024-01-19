@@ -38,9 +38,12 @@ const HomeReservation = ({card, close}) => {
   const [numberOfPeople, setNumberOfPeople] = useState(1);
   const [selectedDate, setSelectedDate] = useState('');
   const [Current, setCurrent] = useState({});
+  const [users, setUsers] = useState([]);
 
   useEffect(() => {
     getCurrentUser();
+    getAllUsers();
+    console.log('users:', users);
   }, []);
 
   const getCurrentUser = async () => {
@@ -54,7 +57,23 @@ const HomeReservation = ({card, close}) => {
       console.log(error);
     }
   };
+  const getAllUsers = async () => {
+    try {
+      let resualt = await axios.get(`${url}/api/user/`);
+      console.log(resualt.data.userList);
+      setUsers(resualt.data.userList);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
+  const sendNotification = async (deviceToken, title, body) => {
+    try {
+      await axios.post(`${url}/send-notification`, {deviceToken, title, body});
+    } catch (error) {
+      console.log('notif', error);
+    }
+  };
   const addBooking = async () => {
     try {
       let NewBooking = {
@@ -64,6 +83,16 @@ const HomeReservation = ({card, close}) => {
         time: selectedTime.toLocaleTimeString(),
         date: selectedDate,
       };
+      const admins = users.filter(e => e.isAdmin == true);
+      admins.map(e => {
+        console.log(e);
+        const deviceToken = e.fcmtoken[e.fcmtoken.length - 1];
+        sendNotification(
+          deviceToken,
+          'New Reservation',
+          `You Recived a New Reservation`,
+        );
+      });
       await axios.post(`${url}/api/booking`, NewBooking);
       console.log(NewBooking);
     } catch (error) {

@@ -29,6 +29,7 @@ const AdminStore = () => {
   const [modalCartVisible, setModalCartVisible] = useState(false);
   const [TitleChangingVisible, setTitleChangingVisible] = useState(false);
   const [DescChangingVisible, setDescChangingVisible] = useState(false);
+  const [CategoryChangingVisible, setCategoryChangingVisible] = useState(false);
   const [PriceChangingVisible, setPriceChangingVisible] = useState(false);
 
   const [selectedProduct, setSelectedProduct] = useState({
@@ -43,7 +44,7 @@ const AdminStore = () => {
   const [Current, setCurrent] = useState({});
   const [NewProductName, setNewProductName] = useState('');
   const [NewProductPrice, setNewProductPrice] = useState('');
-  const [NewProductCategory, setNewProductCategory] = useState();
+  const [NewProductCategory, setNewProductCategory] = useState(0);
   const [NewProductImage, setNewProductImage] = useState({});
   const [DataToedit, setDataToedit] = useState('');
   const [NewProductImageToUpdate, setNewProductImageToUpdate] = useState({});
@@ -53,6 +54,7 @@ const AdminStore = () => {
   useEffect(() => {
     getCurrentUser();
     getProducts();
+    console.log(NewProductCategory);
   }, []);
 
   const getCurrentUser = async () => {
@@ -346,6 +348,22 @@ const AdminStore = () => {
       console.log(error);
     }
   };
+  const updateCategory = async id => {
+    try {
+      await axios.put(`${url}/api/product/${id}`, {
+        ...selectedProduct,
+        categorie: radioButtons[NewProductCategory - 1].value,
+      });
+      setSelectedProduct({
+        ...selectedProduct,
+        categorie: radioButtons[NewProductCategory - 1].value,
+      });
+      await getProducts();
+      setCategoryChangingVisible(false);
+    } catch (error) {
+      console.log(error);
+    }
+  };
   const handleCategorySelection = category => {
     setSelectedCategory(category);
     console.log(filtredCard);
@@ -414,22 +432,10 @@ const AdminStore = () => {
                     <Text style={styles.cardCategerie}>{card.categorie}</Text>
                     <Text style={styles.cardTitle}>{card.title}</Text>
                   </View>
-                  <TouchableOpacity
-                    onPress={() =>
-                      card.likes.includes(Current._id)
-                        ? UnlikeProdact(card)
-                        : likeProdact(card)
-                    }>
-                    <Icon
-                      name={
-                        card.likes.includes(Current._id)
-                          ? 'heart'
-                          : 'heart-outline'
-                      }
-                      size={30}
-                      color="#F68A72"
-                    />
-                  </TouchableOpacity>
+                  <View style={styles.likedBox}>
+                    <Text style={styles.likedValue}>{card.likes.length}</Text>
+                    <Icon name={'heart'} size={30} color="#F68A72" />
+                  </View>
                 </View>
                 <View style={styles.Cardtaile}>
                   <Text style={styles.cardPrice}>{`${card.price} DT`}</Text>
@@ -530,6 +536,27 @@ const AdminStore = () => {
                   <Image source={require('../assets/icons/edit.png')} />
                 </TouchableOpacity>
               </View>
+              <View style={[styles.Row, {marginTop: windowHeight * 0.06}]}>
+                <Text style={[styles.About, {marginRight: 10}]}>Category</Text>
+                <TouchableOpacity
+                  onPress={() => {
+                    let newCategory =
+                      selectedProduct.categorie == 'Equipment'
+                        ? '1'
+                        : selectedProduct.categorie == 'Tools'
+                        ? '2'
+                        : '3';
+                    setNewProductCategory(newCategory);
+                    console.log(NewProductCategory);
+                    setCategoryChangingVisible(true);
+                  }}>
+                  <Image source={require('../assets/icons/edit.png')} />
+                </TouchableOpacity>
+              </View>
+
+              <Text style={styles.description}>
+                {selectedProduct && selectedProduct.categorie}
+              </Text>
               <View style={[styles.Row, {marginTop: windowHeight * 0.06}]}>
                 <Text style={[styles.About, {marginRight: 10}]}>
                   Description
@@ -699,6 +726,47 @@ const AdminStore = () => {
       <Modal
         animationType="slide"
         transparent={true}
+        visible={CategoryChangingVisible}
+        onRequestClose={() => setCategoryChangingVisible(false)}>
+        <View style={styles.AlertmodalContainer}>
+          <View
+            style={[
+              styles.AlertmodalContent,
+              {justifyContent: 'space-around'},
+            ]}>
+            <Image
+              source={require('../assets/icons/edit.png')} // Replace with your image source
+              style={styles.AlertmodalImage}
+            />
+            <Text style={styles.AlertmodalTitle}>Edit{NewProductCategory}</Text>
+            <RadioGroup
+              radioButtons={radioButtons}
+              onPress={setNewProductCategory}
+              selectedId={NewProductCategory}
+              containerStyle={{
+                alignSelf: 'flex-start',
+                marginLeft: windowWidth * 0.1,
+              }}
+            />
+
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity
+                style={[styles.exitModalButton, styles.cancelButton]}
+                onPress={() => setCategoryChangingVisible(false)}>
+                <Text style={[styles.buttonText, {color: '#0080B2'}]}>No</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => updateCategory(selectedProduct._id)}
+                style={styles.exitModalButton}>
+                <Text style={[styles.buttonText, {color: '#F68A72'}]}>Yes</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+      <Modal
+        animationType="slide"
+        transparent={true}
         visible={DescChangingVisible}
         onRequestClose={() => setDescChangingVisible(false)}>
         <View style={styles.AlertmodalContainer}>
@@ -848,7 +916,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   cardTitle: {
-    fontFamily: 'OriginalSurfer-Regular',
+    fontFamily: 'Poppins-Regular',
+
     fontSize: 16,
     color: '#fff',
     marginVertical: 0,
@@ -858,8 +927,7 @@ const styles = StyleSheet.create({
   },
   cardDescription: {},
   cardButton: {
-    marginTop: 5,
-    backgroundColor: '#ebbbd8',
+    backgroundColor: 'transparent',
     borderRadius: 5,
     flexDirection: 'row',
     elevation: 5,
@@ -867,10 +935,11 @@ const styles = StyleSheet.create({
     shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
-    width: '40%',
+    width: '20%',
     height: '123%',
     justifyContent: 'center',
     alignItems: 'center',
+    alignSelf: 'center',
   },
   cardButtonText: {
     color: '#fff',
@@ -1118,7 +1187,6 @@ const styles = StyleSheet.create({
     color: '#F68A72',
     fontSize: 24,
     fontWeight: 'bold',
-    marginHorizontal: 10,
   },
   price: {
     color: '#FFD466',
@@ -1217,7 +1285,7 @@ const styles = StyleSheet.create({
     color: '#F68A72',
     fontSize: 24,
     fontWeight: 'bold',
-    marginHorizontal: 10,
+    marginHorizontal: 3,
   },
   price: {
     color: '#FFD466',
@@ -1230,9 +1298,9 @@ const styles = StyleSheet.create({
   description: {
     color: '#666',
     fontSize: 16,
-    lineHeight: windowHeight * 0.03,
+
     fontFamily: 'OriginalSurfer-Regular',
-    marginVertical: 5,
+    marginTop: 5,
     paddingHorizontal: windowWidth * 0.05,
   },
 
@@ -1355,6 +1423,9 @@ const styles = StyleSheet.create({
     shadowOffset: {width: 1, height: 1},
     shadowOpacity: 1,
     shadowRadius: 5,
+  },
+  likedBox: {
+    flexDirection: 'row',
   },
 });
 

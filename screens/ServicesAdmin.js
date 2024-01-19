@@ -301,9 +301,9 @@ const ServicesAdmin = () => {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <View style={styles.container}>
       <Text style={styles.heading}>Activities</Text>
-      <View style={{marginBottom: windowHeight * 0.2}}>
+      <ScrollView style={{maxHeight: windowHeight * 0.75}}>
         {Services &&
           Services.map(post => (
             <View key={post._id} style={styles.postCard}>
@@ -336,7 +336,7 @@ const ServicesAdmin = () => {
               />
             </View>
           ))}
-      </View>
+      </ScrollView>
       <TouchableOpacity
         style={styles.addPost}
         onPress={() => setModalVisible(true)}>
@@ -348,7 +348,7 @@ const ServicesAdmin = () => {
             height: '100%',
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: '#3C84AC',
+            backgroundColor: '#5AC2E3',
           }}>
           <Text style={styles.addPostText}>+</Text>
         </View>
@@ -535,10 +535,6 @@ const ServicesAdmin = () => {
               styles.AlertmodalContent,
               {height: windowHeight * 0.6, justifyContent: 'space-evenly'},
             ]}>
-            <Image
-              source={require('../assets/icons/edit.png')} // Replace with your image source
-              style={styles.AlertmodalImage}
-            />
             <Text style={styles.AlertmodalTitle}>Edit</Text>
             <TextInput
               style={styles.inputModal}
@@ -573,7 +569,7 @@ const ServicesAdmin = () => {
           </View>
         </View>
       </Modal>
-    </ScrollView>
+    </View>
   );
 };
 const windowWidth = Dimensions.get('window').width;
@@ -584,7 +580,6 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     paddingVertical: 20,
-    height: windowHeight * 0.8,
   },
   heading: {
     color: '#383E44',
@@ -622,7 +617,8 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     color: '#383E44',
-    fontFamily: 'OriginalSurfer-Regular',
+    fontFamily: 'Poppins-Regular',
+
     fontSize: 30,
   },
   cardDescription: {
@@ -701,9 +697,9 @@ const styles = StyleSheet.create({
     height: windowWidth * 0.17,
     borderRadius: 50,
     overflow: 'hidden',
-    position: 'relative',
+    position: 'absolute',
     elevation: 10,
-    bottom: windowHeight * 0.2,
+    bottom: 90,
     alignSelf: 'center',
   },
   addPostText: {

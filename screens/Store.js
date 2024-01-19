@@ -173,11 +173,15 @@ const Store = () => {
                     <Text style={styles.cardTitle}>{card.title}</Text>
                   </View>
                   <TouchableOpacity
+                    style={{flexDirection: 'row'}}
                     onPress={() =>
                       card.likes.includes(Current._id)
                         ? UnlikeProdact(card)
                         : likeProdact(card)
                     }>
+                    <Text style={[styles.likedValue, {marginHorizontal: 3}]}>
+                      {card.likes.length}
+                    </Text>
                     <Icon
                       name={
                         card.likes.includes(Current._id)
@@ -471,7 +475,7 @@ const styles = StyleSheet.create({
   cardDescription: {},
   cardButton: {
     marginTop: 5,
-    backgroundColor: '#F68A72',
+    backgroundColor: 'transparent',
     borderRadius: 5,
     flexDirection: 'row',
     elevation: 5,
@@ -479,7 +483,7 @@ const styles = StyleSheet.create({
     shadowOffset: {width: 0, height: 2},
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
-    width: '30%',
+    width: '20%',
     height: '120%',
     justifyContent: 'center',
     alignItems: 'center',

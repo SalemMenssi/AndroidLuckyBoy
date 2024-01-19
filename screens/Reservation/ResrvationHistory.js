@@ -15,6 +15,7 @@ import {
   Animated,
   Dimensions,
   FlatList,
+  Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import {url} from '../../url';
@@ -24,17 +25,19 @@ import MaskedView from '@react-native-masked-view/masked-view';
 // import LinearGradient from 'react-native-linear-gradient';
 import Icon1 from 'react-native-vector-icons/Ionicons';
 import EventInfo from '../EventInfo';
-
+import messaging from '@react-native-firebase/messaging';
 const ReservationHistory = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [eventModalVisible, setEventModalVisible] = useState(false);
+  const [notifModalVisible, setNotifModalVisible] = useState(false);
   const [selectedCard, setSelectedCard] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [searchText, setSearchText] = useState('');
-  const [Current, setCurrent] = useState({});
+  const [Current, setCurrent] = useState({fcmtoken: []});
   const [Services, setServices] = useState([]);
   const [Events, setEvents] = useState([]);
-  const [notificationCount, setNotificationCount] = useState(3);
+  const [showNotif, setShowNotif] = useState(false);
+  const [notifications, setNotifications] = useState([]);
 
   const fadeAnim = useState(new Animated.Value(0))[0];
 
@@ -46,11 +49,56 @@ const ReservationHistory = () => {
     }).start();
   }, []);
 
+  const getToken = async user => {
+    try {
+      const fcmtoken = await messaging().getToken();
+      console.log(user);
+      let isSaved = user && user.fcmtoken.includes(fcmtoken);
+      console.log(isSaved);
+      if (!isSaved) {
+        await updateUserFCMToken(fcmtoken);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const requestUserPermission = async () => {
+    const authStatus = await messaging().requestPermission();
+    const enabled =
+      authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+      authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+
+    if (enabled) {
+      console.log('Authorization status:', authStatus);
+    }
+  };
+  const retrieveNotificationData = async () => {
+    try {
+      const notificationData = await AsyncStorage.getItem('notifs');
+      if (notificationData !== null) {
+        setNotifications(JSON.parse(notificationData));
+        // Process the notification data as needed
+      } else {
+        setNotifications([]);
+      }
+    } catch (error) {
+      console.error(
+        'Error retrieving notification data from AsyncStorage:',
+        error,
+      );
+    }
+  };
+
   useEffect(() => {
-    getCurrentUser();
     getServices();
     getEvents();
-  }, [Current]);
+    requestUserPermission();
+    retrieveNotificationData();
+    getCurrentUser();
+  }, []);
+  useEffect(() => {
+    retrieveNotificationData();
+  }, [notifications]);
 
   const getCurrentUser = async () => {
     const token = await AsyncStorage.getItem('token');
@@ -59,11 +107,22 @@ const ReservationHistory = () => {
     try {
       let currentUser = await axios.get(`${url}/api/user/${currentId}`);
       setCurrent(currentUser.data.user);
+      await getToken(currentUser.data.user);
     } catch (error) {
-      console.log(error);
+      console.log('curr', error);
     }
   };
-
+  const updateUserFCMToken = async token => {
+    try {
+      await axios.put(`${url}/api/user/${Current._id}`, {
+        ...Current,
+        fcmtoken: [...Current.fcmtoken, token],
+      });
+      await getCurrentUser();
+    } catch (error) {
+      console.log('update', error);
+    }
+  };
   const getServices = async () => {
     try {
       let servicesData = await axios.get(`${url}/api/services/`);
@@ -103,6 +162,28 @@ const ReservationHistory = () => {
       console.log(error);
     }
   };
+  const likeService = async service => {
+    try {
+      await axios.put(`${url}/api/services/${service._id}`, {
+        ...service,
+        Likes: service.likes++,
+      });
+      getServices();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const UnlikeService = async service => {
+    try {
+      await axios.put(`${url}/api/services/${service._id}`, {
+        ...service,
+        Likes: service.likes--,
+      });
+      getServices();
+    } catch (error) {
+      console.log(error);
+    }
+  };
   const handleSearch = text => {
     setSearchText(text);
   };
@@ -128,16 +209,23 @@ const ReservationHistory = () => {
   );
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView
+      contentContainerStyle={styles.container}
+      scrollEnabled={!showNotif}>
       <View style={styles.header}>
-        <View style={styles.notificationContainer}>
+        <TouchableOpacity
+          style={styles.notificationContainer}
+          onPress={() => setShowNotif(true)}>
           <Icon name="bell" size={20} color="#000" />
-          {notificationCount > 0 && (
+          {notifications.length > 0 && (
             <View style={styles.notificationBadge}>
-              <Text style={styles.notificationText}>{notificationCount}</Text>
+              <Text style={styles.notificationText}>
+                {notifications.length}
+              </Text>
             </View>
           )}
-        </View>
+        </TouchableOpacity>
+
         <View style={styles.profileContent}>
           <Image
             source={{uri: `${url}${Current.avatar && Current.avatar.url}`}}
@@ -272,7 +360,11 @@ const ReservationHistory = () => {
         onRequestClose={closeModal}>
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <FoodInfo card={selectedCard} close={closeModal} />
+            <FoodInfo
+              card={selectedCard}
+              close={closeModal}
+              getServices={getServices}
+            />
           </View>
         </View>
       </Modal>
@@ -291,6 +383,28 @@ const ReservationHistory = () => {
           </View>
         </View>
       </Modal>
+      {showNotif ? (
+        <View style={styles.notifbox}>
+          <View style={styles.notifHeader}>
+            <Text style={styles.notifHeaderTitle}>Notifications</Text>
+            <TouchableOpacity
+              style={styles.close}
+              onPress={() => {
+                setShowNotif(false);
+              }}>
+              <Icon name="close" size={20} color="#000" />
+            </TouchableOpacity>
+          </View>
+          <ScrollView>
+            {notifications.map((item, index) => (
+              <View key={index} style={styles.notifitem}>
+                <Text style={styles.notiftitle}>{item.title}</Text>
+                <Text style={styles.notifbody}>{item.body}</Text>
+              </View>
+            ))}
+          </ScrollView>
+        </View>
+      ) : null}
     </ScrollView>
   );
 };
@@ -409,7 +523,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     alignSelf: 'flex-start',
     marginLeft: 20,
-    fontFamily: 'OriginalSurfer-Regular',
+    fontFamily: 'Poppins-Regular',
     color: '#383E44',
     textShadowColor: 'rgba(56, 62, 68, 0.50)',
     textShadowOffset: {width: 1, height: 1},
@@ -476,7 +590,7 @@ const styles = StyleSheet.create({
   recommendationTitle: {
     fontSize: 23,
     fontFamily: 'Poppins-Regular',
-    color: '#3C84AC',
+    color: '#383E44',
     textShadowColor: 'rgba(0, 0, 0, 0.5)',
     textShadowOffset: {width: 1, height: 1},
     textShadowRadius: 1,
@@ -528,21 +642,22 @@ const styles = StyleSheet.create({
   head: {alignSelf: 'center'},
   MediaIcon: {width: 60, height: 60},
   socialMedia: {
-    width: '80%',
+    width: '65%',
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignSelf: 'center',
-    marginTop: windowHeight * 0.1,
+    marginTop: windowHeight * 0.05,
   },
   notificationContainer: {
     position: 'absolute',
     top: windowHeight * 0.05,
     right: 40,
+    padding: 5,
   },
   notificationBadge: {
     position: 'absolute',
     top: -10,
-    right: -10,
+    right: -5,
     backgroundColor: 'red',
     borderRadius: 10,
     width: 20,
@@ -559,7 +674,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   welcome: {
-    fontFamily: 'OriginalSurfer-Regular',
+    fontFamily: 'Poppins-Regular',
     fontSize: 20,
     color: '#fff',
     marginVertical: 10,
@@ -568,5 +683,65 @@ const styles = StyleSheet.create({
     fontFamily: 'OriginalSurfer-Regular',
     fontSize: 42,
     marginTop: windowHeight * 0.06,
+  },
+  alertText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    color: 'red', // Change color as needed
+  },
+  notifbox: {
+    position: 'absolute',
+    paddingBottom: 20,
+    width: windowWidth * 0.7,
+    backgroundColor: '#fff',
+    zIndex: 10000,
+    borderRadius: 20,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 5,
+    },
+    shadowOpacity: 1,
+    shadowRadius: 40,
+    top: windowHeight * 0.25,
+    maxHeight: windowHeight * 0.55,
+    minHeight: windowHeight * 0.55,
+  },
+  notifitem: {
+    marginBottom: 10,
+    borderBottomColor: '#ddd',
+    borderBottomWidth: 1,
+    borderTopColor: '#ddd',
+    borderTopWidth: 1,
+    paddingHorizontal: 10,
+  },
+  notifHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 10,
+    paddingVertical: 15,
+  },
+
+  notifHeaderTitle: {
+    fontSize: 23,
+    fontFamily: 'Poppins-Regular',
+    color: '#000',
+  },
+  notiftitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  notifbody: {
+    fontSize: 16,
+    paddingHorizontal: 10,
+  },
+  close: {
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    borderWidth: 1,
   },
 });

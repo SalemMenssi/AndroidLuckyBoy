@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   StyleSheet,
   Text,
@@ -12,6 +12,7 @@ import {
 import RadialGradient from 'react-native-radial-gradient';
 import {url} from '../url';
 import axios from 'axios';
+import {err} from 'react-native-svg/lib/typescript/xml';
 
 const Confirmation = ({card, close, getBookings}) => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -32,6 +33,11 @@ const Confirmation = ({card, close, getBookings}) => {
         ...card,
         status: 'Refused',
       });
+      await sendNotification(
+        'Reservation order',
+        'Your Reservation Is Refused',
+      );
+
       await getBookings();
       close();
     } catch (error) {
@@ -44,7 +50,12 @@ const Confirmation = ({card, close, getBookings}) => {
         ...card,
         status: 'Confirmed',
       });
+      await sendNotification(
+        'Reservation order',
+        'Your Reservation Is Confirmed',
+      );
       await getBookings();
+
       close();
     } catch (error) {
       console.log(error);
@@ -79,7 +90,17 @@ const Confirmation = ({card, close, getBookings}) => {
     ];
     return months[month - 1] || 'Unknown';
   };
-
+  useEffect(() => {
+    console.log(card.client.fcmtoken[card.client.fcmtoken.length - 1]);
+  }, []);
+  const sendNotification = async (title, body) => {
+    const deviceToken = card.client.fcmtoken[card.client.fcmtoken.length - 1];
+    try {
+      await axios.post(`${url}/send-notification`, {deviceToken, title, body});
+    } catch (error) {
+      console.log(error);
+    }
+  };
   return (
     <View
       style={{height: windowHeight * 0.7, backgroundColor: '#3C84AC'}}
@@ -121,7 +142,7 @@ const Confirmation = ({card, close, getBookings}) => {
           source={require('../assets/images/detailsBox.png')}
           style={styles.line}>
           <Text style={styles.label}>Time</Text>
-          <Text style={styles.value}>{card.time.slice(0, 5)}</Text>
+          <Text style={styles.value}>{card.time.slice(0, 4)}</Text>
         </ImageBackground>
       </View>
 

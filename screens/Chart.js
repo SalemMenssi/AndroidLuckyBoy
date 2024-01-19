@@ -16,12 +16,17 @@ import axios from 'axios';
 import {url} from '../url';
 import {useNavigation} from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import messaging from '@react-native-firebase/messaging';
+import jwtDecode from 'jwt-decode';
 
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
 
 const Chart = () => {
   const [Bookings, setBookings] = useState([]);
+  const [Current, setCurrent] = useState({fcmtoken: []});
+  const [showNotif, setShowNotif] = useState(false);
+  const [notifications, setNotifications] = useState([]);
   const navigation = useNavigation();
   useEffect(() => {
     getBookings();
@@ -44,62 +49,147 @@ const Chart = () => {
       console.log(error);
     }
   };
+  const getToken = async user => {
+    try {
+      const fcmtoken = await messaging().getToken();
+      console.log(user);
+      let isSaved = user && user.fcmtoken.includes(fcmtoken);
+      console.log(isSaved);
+      if (!isSaved) {
+        await updateUserFCMToken(fcmtoken);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const requestUserPermission = async () => {
+    const authStatus = await messaging().requestPermission();
+    const enabled =
+      authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+      authStatus === messaging.AuthorizationStatus.PROVISIONAL;
 
-  const currentDate = new Date();
-  const sixMonthsAgo = new Date();
-  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+    if (enabled) {
+      console.log('Authorization status:', authStatus);
+    }
+  };
+  const retrieveNotificationData = async () => {
+    try {
+      const notificationData = await AsyncStorage.getItem('notifs');
+      if (notificationData !== null) {
+        setNotifications(JSON.parse(notificationData));
+        // Process the notification data as needed
+      } else {
+        setNotifications([]);
+      }
+    } catch (error) {
+      console.error(
+        'Error retrieving notification data from AsyncStorage:',
+        error,
+      );
+    }
+  };
+  useEffect(() => {
+    requestUserPermission();
+    retrieveNotificationData();
+    getCurrentUser();
+  }, []);
+  useEffect(() => {
+    retrieveNotificationData();
+  }, [notifications]);
 
-  const lastSixMonthsBookings = Bookings.filter(booking => {
-    const bookingDate = new Date(booking.date);
-    const bookingYear = bookingDate.getUTCFullYear();
-    const bookingMonth = bookingDate.getUTCMonth();
-    const currentYear = currentDate.getUTCFullYear();
-    const currentMonth = currentDate.getUTCMonth();
-    const sixMonthsAgoYear = sixMonthsAgo.getUTCFullYear();
-    const sixMonthsAgoMonth = sixMonthsAgo.getUTCMonth();
+  const getCurrentUser = async () => {
+    const token = await AsyncStorage.getItem('token');
+    const currentId = jwtDecode(token).id;
 
-    return (
-      (bookingYear > sixMonthsAgoYear ||
-        (bookingYear === sixMonthsAgoYear &&
-          bookingMonth >= sixMonthsAgoMonth)) &&
-      (bookingYear < currentYear ||
-        (bookingYear === currentYear && bookingMonth <= currentMonth))
-    );
-  });
+    try {
+      let currentUser = await axios.get(`${url}/api/user/${currentId}`);
+      setCurrent(currentUser.data.user);
+      await getToken(currentUser.data.user);
+    } catch (error) {
+      console.log('curr', error);
+    }
+  };
+  const updateUserFCMToken = async token => {
+    try {
+      await axios.put(`${url}/api/user/${Current._id}`, {
+        ...Current,
+        fcmtoken: [...Current.fcmtoken, token],
+      });
+      await getCurrentUser();
+    } catch (error) {
+      console.log('update', error);
+    }
+  };
+  function getLast6Months() {
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
 
-  const months = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ];
+    let currentDate = new Date();
+    let monthsArray = [];
 
-  const monthReservations = new Array(12).fill(0);
+    for (let i = 0; i < 6; i++) {
+      monthsArray.unshift(months[currentDate.getMonth()]);
+      currentDate.setMonth(currentDate.getMonth() - 1);
+    }
 
-  lastSixMonthsBookings.forEach(booking => {
-    const monthIndex = new Date(booking.date).getMonth();
-    monthReservations[monthIndex]++;
-  });
+    return monthsArray;
+  }
+  function countLast6MonthsOccurrences(dateArray) {
+    const monthCounts = {};
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+
+    const currentDate = new Date();
+    for (let i = 0; i < 6; i++) {
+      const month = currentDate.toLocaleString('default', {month: 'short'});
+      monthCounts[month] = 0;
+      currentDate.setMonth(currentDate.getMonth() - 1);
+    }
+
+    for (const dateStr of dateArray) {
+      const month = new Date(dateStr).toLocaleString('default', {
+        month: 'short',
+      });
+      if (monthCounts.hasOwnProperty(month)) {
+        monthCounts[month]++;
+      }
+    }
+
+    const resultArray = months.map(month => monthCounts[month] || 0);
+    return resultArray;
+  }
 
   const data = {
-    labels: months.slice(
-      currentDate.getMonth() - 5,
-      currentDate.getMonth() + 1,
-    ),
+    labels: getLast6Months(),
     datasets: [
       {
-        data: monthReservations.slice(
-          currentDate.getMonth() - 5,
-          currentDate.getMonth() + 1,
-        ),
+        data: countLast6MonthsOccurrences(Bookings.map(e => e.date))
+          .slice(0, 6)
+          .reverse(),
       },
     ],
   };
@@ -171,17 +261,17 @@ const Chart = () => {
         <Text style={styles.SubTitle}>Check recent requests </Text>
         <View style={styles.activityContainer}>
           <TouchableOpacity
-            // colors={['#3C84AC', '#5AC2E3']}
+            onPress={() => navigation.navigate('Services')}
             style={[styles.activityItem, {backgroundColor: '#3C84AC'}]}>
             <Image
               style={styles.activityIcon}
               source={require('../assets/icons/PayIcon.png')}
             />
-            <Text style={styles.activityText}>Payment</Text>
+            <Text style={styles.activityText}>Services</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            // colors={['#3C84AC', '#5AC2E3']}
+            onPress={() => navigation.navigate('Reservation-Stat')}
             style={[styles.activityItem, {backgroundColor: '#3C84AC'}]}>
             <Image
               style={styles.activityIcon}
@@ -193,7 +283,7 @@ const Chart = () => {
 
         <View style={styles.activityContainer}>
           <TouchableOpacity
-            // colors={['#3C84AC', '#5AC2E3']}
+            onPress={() => navigation.navigate('Blog')}
             style={[styles.activityItem, {backgroundColor: '#3C84AC'}]}>
             <Image
               style={styles.activityIcon}
@@ -203,7 +293,7 @@ const Chart = () => {
           </TouchableOpacity>
 
           <TouchableOpacity
-            // colors={['#3C84AC', '#5AC2E3']}
+            onPress={() => navigation.navigate('Store')}
             style={[styles.activityItem, {backgroundColor: '#3C84AC'}]}>
             <Image
               style={styles.activityIcon}
@@ -254,7 +344,8 @@ const styles = StyleSheet.create({
     fontSize: 32,
     alignSelf: 'flex-start',
     marginLeft: 20,
-    fontFamily: 'OriginalSurfer-Regular',
+    fontFamily: 'Poppins-Regular',
+
     color: '#383E44',
     textShadowColor: 'rgba(56, 62, 68, 0.50)',
     textShadowOffset: {width: 1, height: 1},

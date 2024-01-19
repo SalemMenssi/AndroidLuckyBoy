@@ -276,7 +276,7 @@ const Profile = () => {
         <Image
           style={styles.profileImage}
           source={{
-            uri: `${url}${Avatar.url}`,
+            uri: `${url}${Current.avatar ? Current.avatar.url : Avatar.url}`,
           }}
         />
         <TouchableOpacity
@@ -396,16 +396,18 @@ const Profile = () => {
 
       <View style={styles.activityContainer}>
         <TouchableOpacity
+          onPress={() => navigation.navigate('Event')}
           style={[styles.activityItem, {backgroundColor: '#3C84AC'}]}>
           <Image
             style={styles.activityIcon}
             source={require('../assets/icons/PayIcon.png')}
           />
-          <Text style={styles.activityText}>Payment</Text>
+          <Text style={styles.activityText}>Services</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={[styles.activityItem, {backgroundColor: '#3C84AC'}]}>
+          style={[styles.activityItem, {backgroundColor: '#3C84AC'}]}
+          onPress={() => navigation.navigate('Reserve')}>
           <Image
             style={styles.activityIcon}
             source={require('../assets/icons/reservationIcon.png')}
@@ -416,6 +418,7 @@ const Profile = () => {
 
       <View style={styles.activityContainer}>
         <TouchableOpacity
+          onPress={() => navigation.navigate('Blog')}
           style={[styles.activityItem, {backgroundColor: '#3C84AC'}]}>
           <Image
             style={styles.activityIcon}
@@ -425,6 +428,7 @@ const Profile = () => {
         </TouchableOpacity>
 
         <TouchableOpacity
+          onPress={() => navigation.navigate('Store')}
           style={[styles.activityItem, {backgroundColor: '#3C84AC'}]}>
           <Image
             style={styles.activityIcon}

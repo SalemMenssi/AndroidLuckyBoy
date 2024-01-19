@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   StyleSheet,
   Text,
@@ -12,11 +12,20 @@ import {
 import HomeReservation from './Reservation/HomeReservation';
 import RadialGradient from 'react-native-radial-gradient';
 import {url} from '../url';
+import axios from 'axios';
+import jwtDecode from 'jwt-decode';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const FoodInfo = ({card, close}) => {
+const FoodInfo = ({card, close, getServices}) => {
   const [modalVisible, setModalVisible] = useState(false);
-  const [isLiked, setIsLiked] = useState(false);
+  const [Current, setCurrent] = useState({});
+  const [likes, setlikes] = useState(card.Likes);
 
+  useEffect(() => {
+    getCurrentUser();
+
+    console.log(card);
+  }, []);
   const openModal = () => {
     setModalVisible(true);
   };
@@ -25,6 +34,42 @@ const FoodInfo = ({card, close}) => {
     setModalVisible(false);
   };
 
+  const getCurrentUser = async () => {
+    const token = await AsyncStorage.getItem('token');
+    const currentId = jwtDecode(token).id;
+
+    try {
+      let currentUser = await axios.get(`${url}/api/user/${currentId}`);
+      setCurrent(currentUser.data.user);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const likeService = async service => {
+    try {
+      console.log(service);
+      await axios.put(`${url}/api/services/${service._id}`, {
+        ...service,
+        Likes: [...service.Likes, Current._id],
+      });
+      console.log('sucess');
+      await getServices();
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const UnlikeService = async service => {
+    try {
+      await axios.put(`${url}/api/services/${service._id}`, {
+        ...service,
+        Likes: service.Likes.filter(e => e !== Current._id),
+      });
+      await getServices();
+    } catch (error) {
+      console.log(error);
+    }
+  };
   return (
     <View style={styles.container}>
       <TouchableOpacity style={styles.close} onPress={close}>
@@ -46,18 +91,24 @@ const FoodInfo = ({card, close}) => {
             <View style={styles.LikeContainer}>
               <TouchableOpacity
                 onPress={() => {
-                  setIsLiked(!isLiked);
+                  card.Likes.includes(Current._id)
+                    ? (UnlikeService(card),
+                      console.log(card.Likes.includes(Current._id)),
+                      setlikes(card.Likes.filter(e => e !== Current._id)))
+                    : (likeService(card),
+                      console.log(card.Likes.includes(Current._id)),
+                      setlikes([...card.Likes, Current._id]));
                 }}>
                 <Image
                   style={styles.likeIcon}
                   source={
-                    isLiked
+                    likes.includes(Current._id)
                       ? require('../assets/icons/FullHeart.png')
                       : require('../assets/icons/heart.png')
                   }
                 />
               </TouchableOpacity>
-              <Text style={styles.likedValue}>{card.Likes}</Text>
+              <Text style={styles.likedValue}>{likes.length}</Text>
             </View>
             <Text style={styles.price}>{card.price}</Text>
           </View>

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "717295880342",
+    "project_id": "pushnotifluckyboy-24a64",
+    "storage_bucket": "pushnotifluckyboy-24a64.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:717295880342:android:c86516544a72d522219ab7",
+        "android_client_info": {
+          "package_name": "com.deliver"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBQXV8Wc1-iK8eHr0xZXfyu4bc_HyECvdg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -15,7 +15,7 @@ import {url} from '../url';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import jwtDecode from 'jwt-decode';
-
+import Icon from 'react-native-vector-icons/Ionicons';
 const EventInfo = ({card, close, getEvents}) => {
   const [isparticipate, setisParticipate] = useState(card.participants);
   const [likes, setlikes] = useState(card.likes);
@@ -146,24 +146,33 @@ const EventInfo = ({card, close, getEvents}) => {
         <View style={styles.infoRow}>
           <View style={styles.LikeAndPriceContainer}>
             <Text style={styles.price}>{card.title}</Text>
-            <View style={styles.LikeContainer}>
-              <TouchableOpacity
-                onPress={() => {
-                  card.likes.includes(Current._id)
-                    ? (UnlikeEvent(card),
-                      setlikes(card.likes.filter(e => e !== Current._id)))
-                    : (likeEvent(card), setlikes([...card.likes, Current._id]));
-                }}>
-                <Image
-                  style={styles.likeIcon}
-                  source={
-                    likes.includes(Current._id)
-                      ? require('../assets/icons/FullHeart.png')
-                      : require('../assets/icons/heart.png')
-                  }
-                />
-              </TouchableOpacity>
-              <Text style={styles.likedValue}>{likes.length}</Text>
+            <View style={styles.icons}>
+              <View style={styles.LikeContainer}>
+                <Icon name="people" size={windowWidth * 0.07} color="#000" />
+                <Text style={[styles.likedValue, {color: '#000'}]}>
+                  {card.participants.length}
+                </Text>
+              </View>
+              <View style={styles.LikeContainer}>
+                <TouchableOpacity
+                  onPress={() => {
+                    card.likes.includes(Current._id)
+                      ? (UnlikeEvent(card),
+                        setlikes(card.likes.filter(e => e !== Current._id)))
+                      : (likeEvent(card),
+                        setlikes([...card.likes, Current._id]));
+                  }}>
+                  <Image
+                    style={styles.likeIcon}
+                    source={
+                      likes.includes(Current._id)
+                        ? require('../assets/icons/FullHeart.png')
+                        : require('../assets/icons/heart.png')
+                    }
+                  />
+                </TouchableOpacity>
+                <Text style={styles.likedValue}>{likes.length}</Text>
+              </View>
             </View>
           </View>
 
@@ -277,7 +286,6 @@ const styles = StyleSheet.create({
     fontFamily: 'OriginalSurfer-Regular',
   },
   LikeAndPriceContainer: {
-    flexDirection: 'row',
     width: '100%',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -355,4 +363,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginTop: 5,
   },
+  icons: {flexDirection: 'row', marginVertical: 10},
 });

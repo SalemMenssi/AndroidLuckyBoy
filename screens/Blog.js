@@ -242,7 +242,7 @@ const Blog = () => {
             height: '100%',
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: '#3C84AC',
+            backgroundColor: '#5AC2E3',
           }}>
           <Text style={styles.addPostText}>+</Text>
         </View>
@@ -421,7 +421,7 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     color: '#383E44',
-    fontFamily: 'OriginalSurfer-Regular',
+    fontFamily: 'Poppins-Bold',
     fontSize: 30,
     width: '70%',
   },

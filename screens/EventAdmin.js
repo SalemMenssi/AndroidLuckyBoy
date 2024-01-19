@@ -35,15 +35,15 @@ const DatePickerCostum = props => {
         borderRadius: 10,
         padding: 10,
         alignSelf: 'center',
-        elevation: 10,
+        // elevation: 10,
         backgroundColor: '#fff',
-        shadowColor: '#383E44',
-        shadowOffset: {
-          width: 1,
-          height: 1,
-        },
-        shadowOpacity: 0.5,
-        shadowRadius: 5,
+        // shadowColor: '#383E44',
+        // shadowOffset: {
+        //   width: 1,
+        //   height: 1,
+        // },
+        // shadowOpacity: 0.5,
+        // shadowRadius: 5,
       }} // Add your custom styles here
     />
   );
@@ -51,6 +51,7 @@ const DatePickerCostum = props => {
 
 const EventAdmin = () => {
   const [Event, setEvent] = useState([]);
+  const [isUpdating, setIsUpdating] = useState(false);
   const [newEventTitle, setNewEventTitle] = useState('');
   const [newEventPlace, setNewEventPlace] = useState('');
   const [newEventDescription, setNewEventDescription] = useState('');
@@ -63,9 +64,11 @@ const EventAdmin = () => {
     date: '',
     time: '',
     location: '',
+    participants: [],
   });
   const [modalVisible, setModalVisible] = useState(false);
   const [modalInfoVisible, setModalInfoVisible] = useState(false);
+  const [modalDeleteService, setModalDeleteService] = useState(false);
   const [isLiked, setIsLiked] = useState(false);
   const [Current, setCurrent] = useState({});
   const [selectedDate, setSelectedDate] = useState('');
@@ -86,13 +89,13 @@ const EventAdmin = () => {
         description: newEventDescription,
         image: newEventImage,
       };
-
-      await createEvent(newEvent);
+      isUpdating ? await UpdateService(newEvent) : await createEvent(newEvent);
       setNewEventTitle('');
       setNewEventDescription('');
       setNewEventPlace('');
       setSelectedDate('');
       setNewEventImage({});
+      setIsUpdating(false);
       await getEvents();
       setModalVisible(false);
     }
@@ -233,10 +236,17 @@ const EventAdmin = () => {
 
     return `${hour}:${minutes} ${period.toLowerCase()}`;
   };
-
+  const parseTimeToDateTime = timeString => {
+    const [hours, minutes, seconds] = timeString.split(':');
+    const dateTime = new Date();
+    dateTime.setHours(parseInt(hours, 10));
+    dateTime.setMinutes(parseInt(minutes, 10));
+    dateTime.setSeconds(parseInt(seconds, 10));
+    return dateTime;
+  };
   const handleDateSelect = date => {
     setSelectedDate(date.dateString);
-    console.log(selectedDate);
+    console.log('date selected', date);
   };
 
   const markedDates = {
@@ -245,11 +255,39 @@ const EventAdmin = () => {
       selectedColor: '#fff',
     },
   };
+  const DeleteService = async id => {
+    try {
+      await axios.delete(`${url}/api/event/${id}`);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const UpdateService = async event => {
+    try {
+      await axios.put(`${url}/api/event/${selectedEvent._id}`, event);
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
+  const handelDeleteService = async id => {
+    await DeleteService(id);
+    await getEvents();
+    setSelectedEvent({
+      title: '',
+      contents: '',
+      image: {url: ''},
+      likes: [],
+      date: '',
+      time: '',
+      location: '',
+    });
+    setModalDeleteService(false);
+  };
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.heading}>Events</Text>
-      <View style={{marginBottom: windowHeight * 0.2}}>
+    <View style={styles.container}>
+      <Text style={[styles.heading]}>Events</Text>
+      <ScrollView style={{maxHeight: windowHeight * 0.75}}>
         {Event &&
           Event.map(post => (
             <View key={post._id} style={styles.postCard}>
@@ -286,8 +324,8 @@ const EventAdmin = () => {
                 </View>
 
                 <Text style={styles.cardDescription}>
-                  {post.description.length > 100
-                    ? post.description.slice(0, 99).concat('...')
+                  {post.description.length > 20
+                    ? post.description.slice(0, 19).concat('...')
                     : post.description}
                 </Text>
                 <TouchableOpacity
@@ -307,10 +345,19 @@ const EventAdmin = () => {
               />
             </View>
           ))}
-      </View>
+      </ScrollView>
       <TouchableOpacity
         style={styles.addPost}
-        onPress={() => setModalVisible(true)}>
+        onPress={() => {
+          setNewEventTitle('');
+          setNewEventDescription('');
+          setNewEventPlace('');
+          setSelectedDate('');
+          setSelectedTime(new Date());
+          setNewEventImage({});
+          setIsUpdating(false);
+          setModalVisible(true);
+        }}>
         <View
           // colors={['#3C84AC', '#5AC2E3', '#3C84AC']}
           style={{
@@ -318,7 +365,7 @@ const EventAdmin = () => {
             height: '100%',
             alignItems: 'center',
             justifyContent: 'center',
-            backgroundColor: '#3C84AC',
+            backgroundColor: '#5AC2E3',
           }}>
           <Text style={styles.addPostText}>+</Text>
         </View>
@@ -329,7 +376,9 @@ const EventAdmin = () => {
         animationType="slide"
         onRequestClose={() => setModalVisible(false)}>
         <ScrollView style={styles.modalContainer}>
-          <Text style={styles.modalTitle}>Add Event</Text>
+          <Text style={styles.modalTitle}>
+            {isUpdating ? 'Updating' : 'Add Event'}
+          </Text>
           <Text style={styles.label}>Title</Text>
           <TextInput
             style={styles.input}
@@ -358,6 +407,7 @@ const EventAdmin = () => {
                 style={styles.calendar}
                 firstDay={1}
                 headerStyle={{}}
+                date={selectedDate}
                 theme={{
                   calendarBackground: 'transparent',
                   monthTextColor: '#fff',
@@ -413,7 +463,9 @@ const EventAdmin = () => {
               style={[styles.RadialEffect, {backgroundColor: '#4698BD'}]}
               // colors={['#5AC2E3', '#4698BD', '#3C84AC']}
             >
-              <Text style={styles.buttonText}>Add Event</Text>
+              <Text style={styles.buttonText}>
+                {isUpdating ? 'Updating' : 'Add Event'}
+              </Text>
             </View>
           </TouchableOpacity>
           <TouchableOpacity
@@ -434,6 +486,7 @@ const EventAdmin = () => {
         onRequestClose={() => setModalInfoVisible(false)}>
         <ScrollView style={styles.modalContainer}>
           <Text style={styles.modalTitle}>{selectedEvent.title}</Text>
+
           <View
             style={[
               styles.infoEventcontainer,
@@ -468,19 +521,63 @@ const EventAdmin = () => {
           <Text style={styles.cardDescription}>
             {selectedEvent.description}
           </Text>
+          <View style={styles.deleteEditButton}>
+            <TouchableOpacity
+              style={{paddingHorizontal: 20}}
+              onPress={() => {
+                setIsUpdating(true);
+                setNewEventTitle(selectedEvent.title);
+                setNewEventDescription(selectedEvent.description);
+                setNewEventPlace(selectedEvent.location);
+                setSelectedDate(selectedEvent.date.slice(0, 10));
+                console.log(selectedEvent.date.slice(0, 10));
+                setNewEventImage(selectedEvent.image);
+                setSelectedTime(parseTimeToDateTime(selectedEvent.time));
+                console.log('time', selectedTime);
+                setModalVisible(true);
+                setModalInfoVisible(false);
+              }}>
+              <Image
+                style={{width: 24, height: 40, resizeMode: 'contain'}}
+                source={require('../assets/icons/edit.png')}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                setModalInfoVisible(false);
+                setModalDeleteService(true);
+              }}>
+              <Image
+                style={{width: 25, height: 40, resizeMode: 'contain'}}
+                source={require('../assets/icons/deleteIcon.png')}
+              />
+            </TouchableOpacity>
+          </View>
           <Image
             source={{uri: `${url}${selectedEvent.image.url}`}}
             style={[
-              styles.cardImage,
+              styles.cardImageEdit,
               {
                 borderRadius: 20,
                 width: '100%',
                 height: 400,
-                marginBottom: 100,
               },
             ]}
             resizeMode="cover"
           />
+          <View style={styles.participated}>
+            {selectedEvent.participants.map((e, i) => (
+              <View key={i} style={styles.participant}>
+                <Image
+                  style={styles.profileImage}
+                  source={{
+                    uri: `${url}${e.avatar.url}`,
+                  }}
+                />
+                <Text style={styles.AlertmodalTitle}>{e.fullName}</Text>
+              </View>
+            ))}
+          </View>
           <TouchableOpacity
             style={styles.close}
             onPress={() => setModalInfoVisible(false)}>
@@ -492,7 +589,37 @@ const EventAdmin = () => {
           </TouchableOpacity>
         </ScrollView>
       </Modal>
-    </ScrollView>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalDeleteService}
+        onRequestClose={() => setModalDeleteServic(false)}>
+        <View style={styles.AlertmodalContainer}>
+          <View style={styles.AlertmodalContent}>
+            <Image
+              source={require('../assets/icons/warning.png')} // Replace with your image source
+              style={styles.AlertmodalImage}
+            />
+            <Text style={styles.AlertmodalTitle}>Alert</Text>
+            <Text style={styles.AlertmodalText}>
+              Are you sure you want to{'\n'}Delete this Event?
+            </Text>
+            <View style={styles.buttonContainer}>
+              <TouchableOpacity
+                style={[styles.exitModalButton, styles.cancelButton]}
+                onPress={() => setModalDeleteService(false)}>
+                <Text style={[styles.buttonText, {color: '#0080B2'}]}>No</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => handelDeleteService(selectedEvent._id)}
+                style={styles.exitModalButton}>
+                <Text style={[styles.buttonText, {color: '#F68A72'}]}>Yes</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    </View>
   );
 };
 const windowWidth = Dimensions.get('window').width;
@@ -532,21 +659,21 @@ const styles = StyleSheet.create({
   cardImage: {width: '100%', height: '100%'},
   Content: {},
   postHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    justifyContent: 'center',
     paddingHorizontal: 20,
     paddingTop: 15,
+    justifyContent: 'space-between',
   },
   cardTitle: {
     color: '#383E44',
-    fontFamily: 'OriginalSurfer-Regular',
+    fontFamily: 'Poppins-Regular',
+
     fontSize: 30,
-    width: '30%',
   },
   cardDescription: {
     fontSize: 16,
     color: '#333',
-    padding: 10,
+    paddingVertical: 10,
     lineHeight: 24,
   },
   seeMoreButton: {position: 'absolute', right: 10, bottom: 8},
@@ -561,6 +688,10 @@ const styles = StyleSheet.create({
     color: '#383E44',
     marginBottom: 5,
   },
+  cardImageEdit: {width: '100%', height: '100%'},
+
+  Content: {},
+
   LikeAndPriceContainer: {
     flexDirection: 'column',
     alignItems: 'center',
@@ -580,7 +711,7 @@ const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#fafafa',
+    backgroundColor: '#fff',
   },
   modalTitle: {
     fontFamily: 'OriginalSurfer-Regular',
@@ -588,6 +719,7 @@ const styles = StyleSheet.create({
     fontSize: 40,
     alignSelf: 'center',
     marginBottom: windowHeight * 0.05,
+    marginTop: 20,
   },
   label: {
     fontFamily: 'OriginalSurfer-Regular',
@@ -621,7 +753,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     position: 'absolute',
     elevation: 10,
-    bottom: windowHeight * 0.15,
+    bottom: 90,
     alignSelf: 'center',
   },
   addPostText: {
@@ -629,7 +761,7 @@ const styles = StyleSheet.create({
     height: '100%',
     fontSize: 46,
   },
-  close: {position: 'absolute', top: windowHeight * 0.05, left: 20},
+  close: {position: 'absolute', top: windowHeight * 0.01, left: 0},
   arrowIcon: {width: 20, height: 20},
   aploadContainer: {flexDirection: 'row'},
   reserveButton: {
@@ -657,10 +789,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     marginVertical: 10,
+    alignSelf: 'center',
     width: '75%',
   },
   infoEvent: {
     alignItems: 'center',
+    justifyContent: 'space-between',
   },
   calendar: {
     width: '85%',
@@ -677,6 +811,80 @@ const styles = StyleSheet.create({
   gradient: {
     height: '100%',
     width: '100%',
+  },
+  deleteEditButton: {
+    flexDirection: 'row',
+    alignSelf: 'flex-end',
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+  },
+  exitModalButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 5,
+    marginHorizontal: 10,
+  },
+  Row: {flexDirection: 'row', alignItems: 'center'},
+  uploadButtonUpdate: {
+    alignSelf: 'flex-end',
+    position: 'absolute',
+    top: windowHeight * 0.39,
+    zIndex: 100,
+  },
+  AlertmodalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 5,
+    zIndex: 1000,
+  },
+  AlertmodalContent: {
+    elevation: 10,
+    backgroundColor: 'white',
+    shadowColor: '#0a0a0a',
+    shadowOffset: {width: 1, height: 1},
+    shadowOpacity: 1,
+    shadowRadius: 5,
+    padding: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    height: windowHeight * 0.4,
+    width: windowWidth * 0.75,
+  },
+  AlertmodalImage: {
+    width: 41,
+    height: 41,
+    marginBottom: 10,
+  },
+  AlertmodalTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 5,
+    color: '#303030',
+  },
+  AlertmodalText: {
+    fontSize: 20,
+    marginVertical: '8%',
+    color: '#000',
+    lineHeight: windowHeight * 0.04,
+    textAlign: 'center',
+  },
+  uploadButton: {},
+  participated: {
+    marginTop: 10,
+    marginBottom: 100,
+  },
+  profileImage: {
+    width: windowWidth * 0.15,
+    height: windowWidth * 0.15,
+    borderRadius: 50,
+    marginRight: 10,
+  },
+  participant: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 10,
   },
 });
 
