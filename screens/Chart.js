@@ -92,6 +92,7 @@ const Chart = () => {
     requestUserPermission();
     retrieveNotificationData();
     getCurrentUser();
+    console.log(data.datasets);
   }, []);
   useEffect(() => {
     retrieveNotificationData();
@@ -146,6 +147,7 @@ const Chart = () => {
 
     return monthsArray;
   }
+
   function countLast6MonthsOccurrences(dateArray) {
     const monthCounts = {};
     const months = [
@@ -166,6 +168,7 @@ const Chart = () => {
     const currentDate = new Date();
     for (let i = 0; i < 6; i++) {
       const month = currentDate.toLocaleString('default', {month: 'short'});
+
       monthCounts[month] = 0;
       currentDate.setMonth(currentDate.getMonth() - 1);
     }
@@ -179,7 +182,11 @@ const Chart = () => {
       }
     }
 
-    const resultArray = months.map(month => monthCounts[month] || 0);
+    const lastSixMonths = getLast6Months().reverse();
+    const resultArray = lastSixMonths.map(e => monthCounts[e]);
+
+    // Sort the resultArray based on the order of lastSixMonths
+
     return resultArray;
   }
 
@@ -213,7 +220,10 @@ const Chart = () => {
 
   return (
     <ScrollView style={{backgroundColor: '#fafafa'}}>
-      <View
+      <LinearGradient
+        colors={['#0094B4', '#00D9F7']}
+        start={{x: 0, y: 0}}
+        end={{x: 1, y: 1}}
         style={[styles.header, {backgroundColor: '#28B0DB'}]}
         // colors={['#3C84AC', '#5AC2E3', '#3C84AC']}
       >
@@ -229,7 +239,7 @@ const Chart = () => {
           />
         </TouchableOpacity>
         <Text style={styles.welcome}>Welcome, Lucky Boy !</Text>
-      </View>
+      </LinearGradient>
       <View style={styles.body}>
         <Text style={styles.SubTitle}>Reservations stats</Text>
         <View style={styles.chart}>
@@ -260,46 +270,63 @@ const Chart = () => {
         </View>
         <Text style={styles.SubTitle}>Check recent requests </Text>
         <View style={styles.activityContainer}>
-          <TouchableOpacity
-            onPress={() => navigation.navigate('Services')}
-            style={[styles.activityItem, {backgroundColor: '#3C84AC'}]}>
-            <Image
-              style={styles.activityIcon}
-              source={require('../assets/icons/PayIcon.png')}
-            />
-            <Text style={styles.activityText}>Services</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Services')}>
+            <LinearGradient
+              colors={['#0094B4', '#00D9F7']}
+              start={{x: 1, y: 0}}
+              end={{x: 1, y: 1}}
+              style={[styles.activityItem, {backgroundColor: '#3C84AC'}]}>
+              <Image
+                style={styles.activityIcon}
+                source={require('../assets/icons/PayIcon.png')}
+              />
+              <Text style={styles.activityText}>Services</Text>
+            </LinearGradient>
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => navigation.navigate('Reservation-Stat')}
-            style={[styles.activityItem, {backgroundColor: '#3C84AC'}]}>
-            <Image
-              style={styles.activityIcon}
-              source={require('../assets/icons/reservationIcon.png')}
-            />
-            <Text style={styles.activityText}>Reservation</Text>
+            onPress={() => navigation.navigate('Reservation-Stat')}>
+            <LinearGradient
+              colors={['#0094B4', '#00D9F7']}
+              start={{x: 1, y: 0}}
+              end={{x: 1.1, y: 1}}
+              style={[styles.activityItem, {backgroundColor: '#3C84AC'}]}>
+              <Image
+                style={styles.activityIcon}
+                source={require('../assets/icons/reservationIcon.png')}
+              />
+              <Text style={styles.activityText}>Reservation</Text>
+            </LinearGradient>
           </TouchableOpacity>
         </View>
 
         <View style={styles.activityContainer}>
-          <TouchableOpacity
-            onPress={() => navigation.navigate('Blog')}
-            style={[styles.activityItem, {backgroundColor: '#3C84AC'}]}>
-            <Image
-              style={styles.activityIcon}
-              source={require('../assets/icons/BlogIcon.png')}
-            />
-            <Text style={styles.activityText}>Blogs</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Blog')}>
+            <LinearGradient
+              colors={['#0094B4', '#00D9F7']}
+              start={{x: 1, y: 0}}
+              end={{x: 1.1, y: 1}}
+              style={[styles.activityItem, {backgroundColor: '#3C84AC'}]}>
+              <Image
+                style={styles.activityIcon}
+                source={require('../assets/icons/BlogIcon.png')}
+              />
+              <Text style={styles.activityText}>Blogs</Text>
+            </LinearGradient>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            onPress={() => navigation.navigate('Store')}
-            style={[styles.activityItem, {backgroundColor: '#3C84AC'}]}>
-            <Image
-              style={styles.activityIcon}
-              source={require('../assets/icons/CarteIcon.png')}
-            />
-            <Text style={styles.activityText}>Purchased</Text>
+          <TouchableOpacity onPress={() => navigation.navigate('Store')}>
+            <LinearGradient
+              colors={['#0094B4', '#00D9F7']}
+              start={{x: 1, y: 0}}
+              end={{x: 1.1, y: 1}}
+              style={[styles.activityItem, {backgroundColor: '#3C84AC'}]}>
+              <Image
+                style={styles.activityIcon}
+                source={require('../assets/icons/CarteIcon.png')}
+              />
+              <Text style={styles.activityText}>Purchased</Text>
+            </LinearGradient>
           </TouchableOpacity>
         </View>
       </View>
@@ -312,7 +339,7 @@ export default Chart;
 const styles = StyleSheet.create({
   header: {
     width: screenWidth,
-    height: screenHeight * 0.3,
+    height: screenHeight * 0.35,
     paddingHorizontal: 20,
     paddingBottom: 30,
     alignItems: 'flex-start',
@@ -326,7 +353,7 @@ const styles = StyleSheet.create({
     textShadowOffset: {height: 1, width: 1},
     textShadowRadius: 1,
     alignSelf: 'center',
-    marginBottom: 40,
+    marginBottom: 0,
   },
   body: {
     backgroundColor: '#fafafa',
@@ -378,8 +405,12 @@ const styles = StyleSheet.create({
   logoOutButton: {
     position: 'absolute',
     top: screenHeight * 0.05,
-    right: 20,
+    right: 30,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  logoutImage: {
+    width: 30,
+    resizeMode: 'contain',
   },
 });

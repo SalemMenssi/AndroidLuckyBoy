@@ -31,6 +31,7 @@ const Store = () => {
   const [basket, setBasket] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [isLiked, setIsLiked] = useState(false);
+  const [searchText, setSearchText] = useState('');
 
   const [products, setProducts] = useState([]);
   const [Current, setCurrent] = useState({});
@@ -102,7 +103,9 @@ const Store = () => {
     setSelectedProduct(product);
     setModalVisible(true);
   };
-
+  const handleSearch = text => {
+    setSearchText(text);
+  };
   const deleteItem = index => {
     const updatedBasket = [...basket];
     updatedBasket.splice(index, 1);
@@ -114,23 +117,60 @@ const Store = () => {
     console.log(filtredCard);
   };
 
+  const filteredCardsByName = products.filter(card =>
+    card.title.toLowerCase().includes(searchText.toLowerCase()),
+  );
+
   const filtredCard =
     selectedCategory === 'All'
-      ? products
-      : products.filter(e => e.categorie === selectedCategory);
+      ? filteredCardsByName
+      : filteredCardsByName.filter(e => e.categorie === selectedCategory);
 
   return (
     <ScrollView style={styles.container}>
-      <View style={[styles.header, {backgroundColor: '#28B0DB'}]}>
+      <LinearGradient
+        colors={['#0094B4', '#00D9F7']}
+        start={{x: 0, y: 0}}
+        end={{x: 1, y: 1}}
+        style={[styles.header]}>
         <Text style={styles.HeaderTitle}>Store</Text>
+      </LinearGradient>
+      <View style={styles.searchBar}>
+        <Icon
+          name="search"
+          size={25}
+          color="#383E44"
+          style={styles.searchIcon}
+        />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search"
+          placeholderTextColor="#A2A2A2"
+          onChangeText={handleSearch}
+          value={searchText}
+        />
+        <TouchableOpacity onPress={() => setSearchText('')}>
+          {searchText ? (
+            <Icon
+              name="close-circle"
+              size={25}
+              color="#383E44"
+              style={styles.resetIcon}
+            />
+          ) : (
+            ''
+          )}
+        </TouchableOpacity>
       </View>
-
       {/* Cards */}
       <View style={styles.cardContainer}>
         {/* Product Types */}
         <ScrollView
           horizontal
-          contentContainerStyle={styles.categoryScrollContainer}
+          contentContainerStyle={[
+            styles.categoryScrollContainer,
+            {marginTop: windowHeight * 0.05},
+          ]}
           showsHorizontalScrollIndicator={false}>
           {categories.map((category, index) => (
             <TouchableOpacity
@@ -142,7 +182,7 @@ const Store = () => {
                   paddingHorizontal: 25,
                   paddingVertical: 15,
                   backgroundColor: `${
-                    selectedCategory === category ? '#FFC444' : '#28B0DB'
+                    selectedCategory === category ? '#28B0DB' : '#F68A72'
                   }`,
                 }}>
                 <Text style={styles.categoryTxt}>{category}</Text>
@@ -152,65 +192,78 @@ const Store = () => {
         </ScrollView>
 
         {/* Popular */}
-        <Text style={styles.subtitle}>Popular</Text>
-
-        <ScrollView
-          contentContainerStyle={[
-            styles.categoryScrollContainer,
-            {flexWrap: 'wrap', flexDirection: 'row'},
-          ]}
-          showsHorizontalScrollIndicator={false}>
-          {filtredCard.map((card, index) => (
-            <ImageBackground
-              source={{uri: `${url}${card.image.url}`}}
-              resizeMode="cover"
-              style={styles.card}
-              key={index}>
-              <View style={styles.cardContent}>
-                <View style={styles.content}>
-                  <View style={styles.ContentHead}>
-                    <Text style={styles.cardCategerie}>{card.categorie}</Text>
-                    <Text style={styles.cardTitle}>{card.title}</Text>
-                  </View>
-                  <TouchableOpacity
-                    style={{flexDirection: 'row'}}
-                    onPress={() =>
-                      card.likes.includes(Current._id)
-                        ? UnlikeProdact(card)
-                        : likeProdact(card)
-                    }>
-                    <Text style={[styles.likedValue, {marginHorizontal: 3}]}>
-                      {card.likes.length}
-                    </Text>
-                    <Icon
-                      name={
+        <Text
+          style={[
+            styles.subtitle,
+            {
+              fontSize: 36,
+              marginTop: windowHeight * 0.02,
+              marginBottom: windowHeight * 0.03,
+            },
+          ]}>
+          our Products
+        </Text>
+        {filtredCard.length === 0 ? (
+          <Text style={[styles.subtitle, {alignSelf: 'center'}]}>
+            no Products
+          </Text>
+        ) : (
+          <ScrollView
+            contentContainerStyle={[
+              styles.categoryScrollContainer,
+              {flexWrap: 'wrap', flexDirection: 'row'},
+            ]}
+            showsHorizontalScrollIndicator={false}>
+            {filtredCard.map((card, index) => (
+              <View style={styles.card} key={index}>
+                <Image
+                  source={{uri: `${url}${card.image.url}`}}
+                  style={styles.productImage}
+                />
+                <View style={styles.cardContent}>
+                  <View style={styles.content}>
+                    <View style={styles.ContentHead}>
+                      {/* <Text style={styles.cardCategerie}>{card.categorie}</Text> */}
+                      <Text style={styles.cardTitle}>{card.title}</Text>
+                    </View>
+                    {/* <TouchableOpacity
+                      style={{flexDirection: 'row'}}
+                      onPress={() =>
                         card.likes.includes(Current._id)
-                          ? 'heart'
-                          : 'heart-outline'
-                      }
-                      size={30}
-                      color="#F68A72"
-                    />
-                  </TouchableOpacity>
-                </View>
-                <View style={styles.Cardtaile}>
-                  <Text style={styles.cardPrice}>{`${card.price} DT`}</Text>
+                          ? UnlikeProdact(card)
+                          : likeProdact(card)
+                      }>
+                      <Text style={[styles.likedValue, {marginHorizontal: 3}]}>
+                        {card.likes.length}
+                      </Text>
+                      <Icon
+                        name={
+                          card.likes.includes(Current._id)
+                            ? 'heart'
+                            : 'heart-outline'
+                        }
+                        size={30}
+                        color="#F68A72"
+                      />
+                    </TouchableOpacity> */}
+                  </View>
+                  <View style={styles.Cardtaile}>
+                    <Text style={styles.cardPrice}>{`${card.price} DT`}</Text>
 
-                  <TouchableOpacity
-                    onPress={() => handleBuy(card)}
-                    style={styles.cardButton}>
-                    <Icon
-                      style={styles.basketIcon}
-                      size={25}
-                      color="#fff"
-                      name="cart-outline"
-                    />
-                  </TouchableOpacity>
+                    <TouchableOpacity onPress={() => handleBuy(card)}>
+                      <Image
+                        // style={[styles.seemoreService]}
+                        source={require('../assets/icons/seemore.png')}
+                        resizeMode="contain"
+                        style={styles.productInfoImg}
+                      />
+                    </TouchableOpacity>
+                  </View>
                 </View>
               </View>
-            </ImageBackground>
-          ))}
-        </ScrollView>
+            ))}
+          </ScrollView>
+        )}
       </View>
 
       {/* Basket Modal */}
@@ -277,14 +330,14 @@ const Store = () => {
                     {selectedProduct && selectedProduct.likes.length}
                   </Text>
                 </View>
-                <Text style={styles.price}>{`${
+                {/* <Text style={styles.price}>{`${
                   selectedProduct && selectedProduct.price * quantity
-                } DT`}</Text>
+                } DT`}</Text> */}
               </View>
               <Text style={styles.title}>
                 {selectedProduct && selectedProduct.title}
               </Text>
-              <Text style={styles.About}>Description</Text>
+              {/* <Text style={styles.About}>Description</Text> */}
               <Text style={styles.description}>
                 {selectedProduct && selectedProduct.description}
               </Text>
@@ -309,9 +362,21 @@ const Store = () => {
             <TouchableOpacity
               style={styles.reserveButton}
               onPress={addToBasket}>
-              <View style={[styles.RadialEffect, {backgroundColor: '#3C84AC'}]}>
-                <Text style={styles.buttonText}>Add To Cart</Text>
-              </View>
+              <LinearGradient
+                colors={['#00D9F7', '#0094B4']}
+                start={{x: 0, y: 0}}
+                end={{x: 0.9, y: 0.9}}
+                style={[
+                  styles.RadialEffect,
+                  {backgroundColor: '#4698BD', flexDirection: 'row'},
+                ]}
+                // colors={['#5AC2E3', '#4698BD', '#3C84AC']}
+              >
+                <Text style={styles.price}>
+                  {selectedProduct && selectedProduct.price * quantity} DT
+                </Text>
+                <Text style={styles.buttonText}>Buy now</Text>
+              </LinearGradient>
             </TouchableOpacity>
           </View>
         </View>
@@ -325,7 +390,9 @@ const Store = () => {
           style={styles.basketIcon}
           source={require('../assets/icons/StoreCartIcon.png')}
         />
-        <Text style={styles.basketText}>{basket.length}</Text>
+        {basket.length == 0 ? null : (
+          <Text style={styles.basketText}>{basket.length}</Text>
+        )}
       </TouchableOpacity>
 
       {/* Cart */}
@@ -336,7 +403,14 @@ const Store = () => {
         onRequestClose={() => setModalCartVisible(false)}>
         <View style={styles.cartContainer}>
           <View style={styles.cartContent}>
-            <Text style={styles.cartTitle}>Cart</Text>
+            <View style={styles.CartHeader}>
+              <Text style={styles.cartTitle}>Cart</Text>
+              <TouchableOpacity
+                style={styles.cartCloseButton}
+                onPress={() => setModalCartVisible(false)}>
+                <Text style={styles.cartCloseButtonText}>close</Text>
+              </TouchableOpacity>
+            </View>
             <ScrollView contentContainerStyle={styles.cartItemsContainer}>
               {basket.map((item, index) => (
                 <View style={styles.cartItem} key={index}>
@@ -345,7 +419,12 @@ const Store = () => {
                     source={{uri: `${url}${item.image.url}`}}
                   />
                   <View style={styles.cartItemContent}>
-                    <Text style={styles.cartItemTitle}>{item.title}</Text>
+                    <Text style={styles.cartItemTitle}>
+                      {item.title}
+                      <Text style={styles.About}>
+                        {item.quantity == 1 ? '' : ` x${item.quantity}`}
+                      </Text>
+                    </Text>
                     <Text style={styles.cartItemPrice}>{`${
                       item.price * item.quantity
                     } DT`}</Text>
@@ -353,7 +432,7 @@ const Store = () => {
                   <TouchableOpacity
                     style={styles.cartItemRemove}
                     onPress={() => deleteItem(index)}>
-                    <Icon name="trash-outline" size={20} color="#FF3B30" />
+                    <Icon name="trash-outline" size={30} color="#F68A72" />
                   </TouchableOpacity>
                 </View>
               ))}
@@ -365,24 +444,26 @@ const Store = () => {
                 basket.reduce((acc, e) => acc + e.price * e.quantity, 0)
               } DT`}</Text>
             </View>
-            <View style={styles.carteButtonContainer}>
-              <TouchableOpacity
-                style={styles.cartCloseButton}
-                onPress={() => Alert.alert('Payement', 'Buy with succes')}>
-                <View
-                  style={[styles.RadialEffect, {backgroundColor: '#FFD466'}]}>
-                  <Text style={styles.buttonText}>Buy</Text>
-                </View>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.cartCloseButton}
-                onPress={() => setModalCartVisible(false)}>
-                <View
-                  style={[styles.RadialEffect, {backgroundColor: '#5AC2E3'}]}>
-                  <Text style={styles.buttonText}>close</Text>
-                </View>
-              </TouchableOpacity>
-            </View>
+            <TouchableOpacity
+              style={styles.reserveButton}
+              onPress={() => Alert.alert('Payement', 'Buy with succes')}>
+              <LinearGradient
+                colors={['#00D9F7', '#0094B4']}
+                start={{x: 0, y: 0}}
+                end={{x: 0.9, y: 0.9}}
+                style={[
+                  styles.RadialEffect,
+                  {
+                    backgroundColor: '#4698BD',
+                    flexDirection: 'row',
+                    justifyContent: 'center',
+                  },
+                ]}
+                // colors={['#5AC2E3', '#4698BD', '#3C84AC']}
+              >
+                <Text style={styles.buttonText}>Buy</Text>
+              </LinearGradient>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
@@ -423,7 +504,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderColor: '#000',
     marginVertical: 10,
-    height: windowHeight * 0.35,
+    height: windowHeight * 0.3,
     width: windowWidth * 0.43,
     borderRadius: 13,
     zIndex: 100,
@@ -432,21 +513,25 @@ const styles = StyleSheet.create({
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 0,
     },
     shadowOpacity: 0.5,
-    shadowRadius: 10,
+    shadowRadius: 5,
     overflow: 'hidden',
     marginHorizontal: 10,
   },
-  cardImage: {},
+  productImage: {
+    width: '100%',
+    height: '65%',
+    resizeMode: 'cover',
+  },
   cardContent: {
     alignItems: 'center',
     width: '100%',
-    height: '40%',
+    height: '35%',
     paddingHorizontal: 10,
-    paddingVertical: 10,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    paddingVertical: 5,
+    backgroundColor: '#fff',
   },
   content: {
     flexDirection: 'row',
@@ -455,22 +540,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   ContentHead: {justifyContent: 'center'},
-  cardCategerie: {color: '#ccebff', fontSize: 10, marginHorizontal: 10},
+  cardCategerie: {color: '#000', fontSize: 10, marginHorizontal: 10},
   Cardtaile: {
     flexDirection: 'row',
-    marginTop: 10,
+    marginTop: 5,
     width: '100%',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
   cardTitle: {
-    fontFamily: 'OriginalSurfer-Regular',
-    fontSize: 16,
-    color: '#fff',
-    marginVertical: 0,
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
-    textShadowOffset: {width: 1, height: 1},
-    textShadowRadius: 4,
+    fontFamily: 'Poppins-Bold',
+    fontSize: 22,
+    color: '#000',
+    // textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    // textShadowOffset: {width: 1, height: 1},
+    // textShadowRadius: 4,
   },
   cardDescription: {},
   cardButton: {
@@ -494,12 +578,12 @@ const styles = StyleSheet.create({
     marginRight: 5,
   },
   cardPrice: {
-    color: '#FFD466',
+    color: '#0094B4',
     fontSize: 24,
     textShadowColor: 'rgba(255, 255, 255, 0.5)',
     textShadowOffset: {width: 1, height: 1},
     textShadowRadius: 1.5,
-    fontFamily: 'OriginalSurfer-Regular',
+    fontFamily: 'Poppins-Bold',
     alignSelf: 'flex-end',
   },
   modalContainer: {
@@ -560,7 +644,7 @@ const styles = StyleSheet.create({
   },
   basketButton: {
     position: 'absolute',
-    top: 40,
+    top: 70,
     right: 20,
     borderRadius: 50,
     width: 50,
@@ -568,7 +652,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  basketIcon: {},
+  basketIcon: {tintColor: '#fff'},
   basketText: {
     position: 'absolute',
     top: 1,
@@ -619,15 +703,16 @@ const styles = StyleSheet.create({
   cartContent: {
     backgroundColor: '#FFFFFF',
     padding: 20,
+    paddingBottom: 50,
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
-    minHeight: '75%',
-    maxHeight: '75%',
+    minHeight: '80%',
+    maxHeight: '80%',
     elevation: 20,
     shadowColor: '#000',
     shadowOffset: {
       width: 1,
-      height: -20,
+      height: -1,
     },
     shadowOpacity: 1,
     shadowRadius: 10,
@@ -635,8 +720,9 @@ const styles = StyleSheet.create({
   cartTitle: {
     fontSize: 40,
     marginBottom: 20,
-    color: '#3C84AC',
-    fontFamily: 'OriginalSurfer-Regular',
+    color: '#0094B4',
+    fontFamily: 'Poppins-Bold',
+    fontWeight: 'bold',
   },
   cartItemsContainer: {
     flexGrow: 1,
@@ -647,6 +733,8 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     borderBottomColor: '#E5E5E5',
     height: windowHeight * 0.15,
+    borderBottomWidth: 2,
+    paddingBottom: 10,
   },
   ImageItem: {
     width: '40%',
@@ -667,10 +755,8 @@ const styles = StyleSheet.create({
   cartItemPrice: {
     color: '#FFD466',
     fontSize: 24,
-    textShadowColor: '#383E44',
-    textShadowOffset: {width: 1, height: 1},
-    textShadowRadius: 2,
-    fontFamily: 'OriginalSurfer-Regular',
+    fontWeight: '900',
+    fontFamily: 'Poppins-Bold',
   },
   cartItemRemove: {position: 'absolute', right: 10},
   basketBottom: {
@@ -682,15 +768,17 @@ const styles = StyleSheet.create({
   },
   cartCloseButton: {
     borderRadius: 20,
-    width: '32%',
     height: windowHeight * 0.07,
     elevation: 5,
-    overflow: 'hidden',
-    marginHorizontal: 20,
+    backgroundColor: '#F68A72',
+    width: '30%',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   cartCloseButtonText: {
     color: '#FFFFFF',
-    fontSize: 16,
+    fontSize: 24,
+    fontFamily: 'Poppins-Bold',
   },
   headerImage: {
     width: '110%',
@@ -718,7 +806,7 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 30,
+    paddingHorizontal: 0,
   },
   LikeContainer: {
     flexDirection: 'row',
@@ -732,12 +820,10 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
   },
   price: {
-    color: '#FFD466',
+    color: '#fff',
     fontSize: 24,
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
-    textShadowOffset: {width: -1, height: 1},
-    textShadowRadius: 1.5,
-    fontFamily: 'OriginalSurfer-Regular',
+
+    fontFamily: 'Poppins-Bold',
   },
   quantityContainer: {
     flexDirection: 'row',
@@ -774,15 +860,11 @@ const styles = StyleSheet.create({
   close: {
     position: 'absolute',
     zIndex: 10,
-    marginHorizontal: 20,
-    marginVertical: 20,
+    marginHorizontal: 10,
+    marginVertical: 40,
   },
-  arrowIcon: {
-    width: 20,
-    height: 20,
-    tintColor: '#fff',
-    resizeMode: 'contain',
-  },
+  arrowIcon: {width: 50, resizeMode: 'contain', tintColor: '#fff'},
+
   imageContainer: {
     width: windowWidth,
     height: windowHeight * 0.55,
@@ -791,32 +873,22 @@ const styles = StyleSheet.create({
   },
   infoContainer: {
     backgroundColor: '#fff',
-    paddingTop: 20,
-    paddingBottom: 20,
-    paddingHorizontal: 20,
-    height: windowHeight * 0.53,
+    paddingVertical: 40,
+    paddingHorizontal: 50,
+    height: windowHeight * 0.57,
     borderTopLeftRadius: 60,
-    justifyContent: 'space-between',
-    overflow: 'hidden',
+    justifyContent: 'space-evenly',
     top: windowHeight * -0.12,
   },
   infoRow: {},
   title: {
     color: '#000',
     fontSize: 40,
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
-    textShadowOffset: {width: -1, height: 1},
-    textShadowRadius: 5,
-    fontFamily: 'OriginalSurfer-Regular',
+
+    fontFamily: 'Poppins-Bold',
     marginVertical: 10,
   },
-  LikeAndPriceContainer: {
-    flexDirection: 'row',
-    width: '100%',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 30,
-  },
+
   LikeContainer: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -828,14 +900,7 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginHorizontal: 10,
   },
-  price: {
-    color: '#FFD466',
-    fontSize: 24,
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
-    textShadowOffset: {width: -1, height: 1},
-    textShadowRadius: 1.5,
-    fontFamily: 'OriginalSurfer-Regular',
-  },
+
   description: {
     color: '#666',
     fontSize: 16,
@@ -846,29 +911,82 @@ const styles = StyleSheet.create({
   },
 
   reserveButton: {
-    borderRadius: 60,
-    width: '60%',
-    height: windowHeight * 0.08,
+    borderRadius: 15,
+    width: '100%',
+    height: windowHeight * 0.07,
     alignSelf: 'center',
     elevation: 5,
+
     overflow: 'hidden',
   },
   RadialEffect: {
     width: '100%',
     height: '100%',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 25,
   },
   buttonText: {
-    fontSize: 30,
     color: '#fff',
-    fontFamily: 'OriginalSurfer-Regular',
+    fontSize: 28,
+    fontFamily: 'Poppins-Medium',
   },
   About: {color: '#383E44', fontSize: 18, fontWeight: '500'},
   carteButtonContainer: {
     flexDirection: 'row',
     alignSelf: 'center',
     marginTop: 20,
+  },
+  productInfoImg: {
+    resizeMode: 'contain',
+    width: 30,
+    padding: 5,
+    marginLeft: 5,
+    height: 30,
+    borderRadius: 50,
+
+    borderColor: '#3C84AC',
+  },
+  CartHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  searchBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 25,
+    paddingVertical: 10,
+    backgroundColor: '#fff',
+    width: windowWidth * 0.7,
+    alignSelf: 'center',
+    borderRadius: 50,
+    elevation: 5,
+    zIndex: 15,
+    top: windowHeight * -0.1,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 1,
+    shadowRadius: 5,
+  },
+  searchIcon: {
+    marginRight: 10,
+  },
+  resetIcon: {
+    marginLeft: 0,
+  },
+  searchInput: {
+    borderColor: '#383E44',
+    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 0,
+    width: '80%',
+    color: '#383E44',
+    fontSize: 20,
   },
 });
 

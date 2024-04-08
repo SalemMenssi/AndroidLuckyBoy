@@ -12,6 +12,7 @@ import {
 import RadialGradient from 'react-native-radial-gradient';
 import {url} from '../../url';
 import axios from 'axios';
+import LinearGradient from 'react-native-linear-gradient';
 
 const ReservationDetails = ({card, close, getBookings}) => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -68,45 +69,56 @@ const ReservationDetails = ({card, close, getBookings}) => {
   };
 
   return (
-    <View style={{height: windowHeight * 0.7, backgroundColor: '#3C84AC'}}>
-      <TouchableOpacity style={styles.return} onPress={close}>
-        <Image
-          style={styles.arrowIcon}
-          source={require('../../assets/icons/fleche.png')}
-        />
-      </TouchableOpacity>
+    <View>
+      <LinearGradient
+        colors={['#0094B4', '#00DaF8']}
+        start={{x: 0, y: 0}}
+        end={{x: 1, y: 1}}
+        style={{height: windowHeight * 0.7}}>
+        <TouchableOpacity style={styles.return} onPress={close}>
+          <Image
+            style={styles.arrowIcon}
+            source={require('../../assets/icons/fleche.png')}
+          />
+        </TouchableOpacity>
 
-      <Text style={styles.heading}>Reservation details</Text>
+        <Text style={styles.heading}>Reservation details</Text>
 
-      <View style={styles.activitie}>
-        <Image
-          style={styles.imageStyle}
-          resizeMode="cover"
-          source={{uri: `${url}${card.service.image.url}`}}
-        />
-        <Text style={styles.activityName}>{card.service.title}</Text>
-      </View>
-      <View style={styles.activitiesInfo}>
-        <ImageBackground
-          source={require('../../assets/images/detailsBox.png')}
-          style={styles.line}>
-          <Text style={styles.label}>Guest</Text>
-          <Text style={styles.value}>{card.people}</Text>
-        </ImageBackground>
-        <ImageBackground
-          source={require('../../assets/images/detailsBox.png')}
-          style={styles.line}>
-          <Text style={styles.label}>Day</Text>
-          <Text style={styles.value}>{formatMonthAndDay(card.date)}</Text>
-        </ImageBackground>
-        <ImageBackground
-          source={require('../../assets/images/detailsBox.png')}
-          style={styles.line}>
-          <Text style={styles.label}>Time</Text>
-          <Text style={styles.value}>{card.time.slice(0, 5)}</Text>
-        </ImageBackground>
-      </View>
-
+        <View style={styles.activitie}>
+          <Image
+            style={styles.imageStyle}
+            resizeMode="cover"
+            source={{uri: `${url}${card.service.image.url}`}}
+          />
+          <Text style={styles.activityName}>{card.service.title}</Text>
+        </View>
+        <Text style={styles.motivation}>
+          You will live an unforgettable adventure that will last a lifetime.
+        </Text>
+        <View style={styles.activitiesInfo}>
+          <ImageBackground
+            source={require('../../assets/images/detailsBox.png')}
+            resizeMode="contain"
+            style={styles.line}>
+            <Text style={styles.label}>Guest</Text>
+            <Text style={styles.value}>{card.people}</Text>
+          </ImageBackground>
+          <ImageBackground
+            source={require('../../assets/images/detailsBox.png')}
+            resizeMode="contain"
+            style={styles.line}>
+            <Text style={styles.label}>Day</Text>
+            <Text style={styles.value}>{formatMonthAndDay(card.date)}</Text>
+          </ImageBackground>
+          <ImageBackground
+            source={require('../../assets/images/detailsBox.png')}
+            resizeMode="contain"
+            style={styles.line}>
+            <Text style={styles.label}>Time</Text>
+            <Text style={styles.value}>{card.time.slice(0, 4)}</Text>
+          </ImageBackground>
+        </View>
+      </LinearGradient>
       <TouchableOpacity style={styles.exitButton} onPress={handleExit}>
         <Text style={styles.buttonText}>Cancel</Text>
       </TouchableOpacity>
@@ -147,13 +159,13 @@ const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
 const styles = StyleSheet.create({
-  arrowIcon: {},
+  arrowIcon: {width: 40, resizeMode: 'contain', tintColor: '#fff'},
   heading: {
     alignSelf: 'center',
-    fontSize: 36,
-    fontFamily: 'OriginalSurfer-Regular',
-    color: '#FFD466',
-    marginTop: windowHeight * 0.1,
+    fontSize: 32,
+    fontFamily: 'Poppins-Medium',
+    color: '#fff',
+    marginTop: windowHeight * 0.095,
   },
   subheading: {
     textAlign: 'center',
@@ -171,18 +183,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   activityName: {
-    fontFamily: 'OriginalSurfer-Regular',
-    color: '#383E44',
+    fontFamily: 'Poppins-Bold',
+    color: '#fff',
     fontSize: 32,
+    marginTop: 10,
   },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-evenly',
   },
   label: {
-    fontSize: 16,
+    fontSize: 22,
     color: '#fff',
     fontWeight: 'normal',
+    marginBottom: 5,
   },
   value: {
     left: 0,
@@ -194,20 +208,20 @@ const styles = StyleSheet.create({
   exitButton: {
     borderRadius: 15,
     width: windowWidth * 0.4,
-    height: windowHeight * 0.07,
+    height: windowHeight * 0.05,
     backgroundColor: 'transparent',
     justifyContent: 'center',
     alignItems: 'center',
     marginVertical: windowHeight * 0.1,
     alignSelf: 'center',
     borderWidth: 2,
-    borderColor: '#F68A72',
+    borderColor: '#5ac2e3',
   },
 
   buttonText: {
     fontSize: 25,
-    color: '#F68A72',
-    fontFamily: 'OriginalSurfer-Regular',
+    color: '#5ac2e3',
+    fontFamily: 'Poppins-Medium',
   },
   activitiesInfo: {
     flexDirection: 'row',
@@ -216,12 +230,12 @@ const styles = StyleSheet.create({
   },
   line: {
     alignItems: 'center',
-    width: windowWidth * 0.23,
+    width: windowWidth * 0.26,
     height: windowHeight * 0.15,
-    justifyContent: 'space-around',
+    justifyContent: 'center',
     paddingVertical: 10,
   },
-  return: {padding: 10, position: 'absolute', marginTop: 10, marginLeft: 10},
+  return: {padding: 10, position: 'absolute', marginTop: 40, marginLeft: 0},
   modalContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -264,6 +278,15 @@ const styles = StyleSheet.create({
   },
   cancelButton: {},
   confirmButton: {},
+  motivation: {
+    fontSize: 18,
+    color: '#fff',
+    fontFamily: 'Poppins-Medium',
+    textAlign: 'center',
+    width: '80%',
+    alignSelf: 'center',
+    paddingVertical: 18,
+  },
 });
 
 export default ReservationDetails;

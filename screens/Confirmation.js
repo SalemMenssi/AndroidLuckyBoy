@@ -9,10 +9,9 @@ import {
   ImageBackground,
   Modal,
 } from 'react-native';
-import RadialGradient from 'react-native-radial-gradient';
 import {url} from '../url';
 import axios from 'axios';
-import {err} from 'react-native-svg/lib/typescript/xml';
+import LinearGradient from 'react-native-linear-gradient';
 
 const Confirmation = ({card, close, getBookings}) => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -102,7 +101,10 @@ const Confirmation = ({card, close, getBookings}) => {
     }
   };
   return (
-    <View
+    <LinearGradient
+      colors={['#0094B4', '#00DaF8']}
+      start={{x: 0, y: 0}}
+      end={{x: 1, y: 1}}
       style={{height: windowHeight * 0.7, backgroundColor: '#3C84AC'}}
       // colors={['#3C84AC', '#5AC2E3', '#3C84AC']}
     >
@@ -123,7 +125,8 @@ const Confirmation = ({card, close, getBookings}) => {
             uri: `${url}${card.client.avatar && card.client.avatar.url}`,
           }}
         />
-        <Text style={styles.activityName}>{card.client.username}</Text>
+        <Text style={styles.activityName}>{card.client.fullName}</Text>
+        <Text style={styles.activityName}>{card.client.Number}</Text>
       </View>
       <View style={styles.activitiesInfo}>
         <ImageBackground
@@ -147,13 +150,23 @@ const Confirmation = ({card, close, getBookings}) => {
       </View>
 
       <View style={styles.btnBox}>
-        <TouchableOpacity style={styles.exitButton} onPress={handleExit}>
-          <Text style={styles.buttonText}>Refuse</Text>
-        </TouchableOpacity>
         <TouchableOpacity
           style={[styles.exitButton, {borderColor: '#5AC2E3'}]}
+          onPress={handleExit}>
+          <Text style={[styles.buttonText, {color: '#5AC2E3'}]}>Refuse</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.reserveButton}
           onPress={AccepteTheReservation}>
-          <Text style={[styles.buttonText, {color: '#5AC2E3'}]}>Accepte</Text>
+          <LinearGradient
+            colors={['#00DaF8', '#0094B4']}
+            start={{x: 0, y: 0}}
+            end={{x: 0.9, y: 0.9}}
+            style={[styles.RadialEffect, {backgroundColor: '#FFC444'}]}
+            // colors={['#FFC444', '#FEE6C2', '#FFC444']}
+          >
+            <Text style={[styles.buttonText, {color: '#fff'}]}>Accepte</Text>
+          </LinearGradient>
         </TouchableOpacity>
       </View>
       <Modal
@@ -186,20 +199,20 @@ const Confirmation = ({card, close, getBookings}) => {
           </View>
         </View>
       </Modal>
-    </View>
+    </LinearGradient>
   );
 };
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
 const styles = StyleSheet.create({
-  arrowIcon: {},
+  arrowIcon: {width: 40, resizeMode: 'contain', tintColor: '#fff'},
   heading: {
     alignSelf: 'center',
-    fontSize: 36,
-    fontFamily: 'OriginalSurfer-Regular',
-    color: '#FFD466',
-    marginTop: windowHeight * 0.1,
+    fontSize: 32,
+    fontFamily: 'Poppins-Medium',
+    color: '#fff',
+    marginTop: windowHeight * 0.106,
   },
   subheading: {
     textAlign: 'center',
@@ -217,9 +230,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   activityName: {
-    fontFamily: 'OriginalSurfer-Regular',
-    color: '#383E44',
+    fontFamily: 'Poppins-Bold',
+    color: '#FFF',
     fontSize: 32,
+    fontWeight: '900',
   },
   row: {
     flexDirection: 'row',
@@ -253,7 +267,7 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 25,
     color: '#F68A72',
-    fontFamily: 'OriginalSurfer-Regular',
+    fontFamily: 'Poppins-Bold',
   },
   activitiesInfo: {
     flexDirection: 'row',
@@ -267,7 +281,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     paddingVertical: 10,
   },
-  return: {padding: 10, position: 'absolute', marginTop: 10, marginLeft: 10},
+  return: {padding: 10, position: 'absolute', marginTop: 40, marginLeft: 0},
   modalContainer: {
     flex: 1,
     justifyContent: 'center',
@@ -278,8 +292,16 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 10,
     alignItems: 'center',
-    height: windowHeight * 0.4,
+    height: windowHeight * 0.35,
     width: windowWidth * 0.75,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 1,
+      height: 1,
+    },
+    shadowOpacity: 1,
+    shadowRadius: 5,
   },
   modalImage: {
     width: 41,
@@ -313,6 +335,20 @@ const styles = StyleSheet.create({
   btnBox: {
     flexDirection: 'row',
     justifyContent: 'space-around',
+  },
+  reserveButton: {
+    borderRadius: 12,
+    width: '40%',
+    height: windowHeight * 0.07,
+    alignSelf: 'center',
+    elevation: 5,
+    overflow: 'hidden',
+  },
+  RadialEffect: {
+    width: '100%',
+    height: '100%',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
 

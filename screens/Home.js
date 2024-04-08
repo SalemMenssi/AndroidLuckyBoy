@@ -20,7 +20,7 @@ import {ScrollView} from 'react-native-gesture-handler';
 const {height, width} = Dimensions.get('window');
 import Icon from 'react-native-vector-icons/FontAwesome';
 import jwtDecode from 'jwt-decode';
-
+Icon.loadFont();
 const Home = () => {
   const navigation = useNavigation();
   const [showLoginForm, setShowLoginForm] = useState(false);
@@ -36,6 +36,7 @@ const Home = () => {
     password: '',
     email: '',
     fullName: '',
+    Number: '',
   });
   const [user, setUser] = useState({
     username: '',
@@ -167,6 +168,7 @@ const Home = () => {
       password: '',
       email: '',
       fullName: '',
+      Number: '',
     });
     console.log('register', newUser);
   };
@@ -322,6 +324,16 @@ const Home = () => {
                       setNewUser({...newUser, username: text})
                     }
                   />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Phone"
+                    keyboardType="numeric"
+                    placeholderTextColor="#364F6B"
+                    value={newUser.Number}
+                    onChangeText={text =>
+                      setNewUser({...newUser, Number: text})
+                    }
+                  />
                   <View style={styles.passwordContainer}>
                     <TextInput
                       style={styles.passwordinput}
@@ -332,23 +344,6 @@ const Home = () => {
                       onChangeText={text =>
                         setNewUser({...newUser, password: text})
                       }
-                    />
-                    <Icon
-                      name={showPassword ? 'eye-slash' : 'eye'}
-                      size={24}
-                      color="#333"
-                      style={styles.eyeIcon}
-                      onPress={() => setShowPassword(!showPassword)}
-                    />
-                  </View>
-                  <View style={styles.passwordContainer}>
-                    <TextInput
-                      style={styles.passwordinput}
-                      placeholder="Confirm Password"
-                      placeholderTextColor="#364F6B"
-                      secureTextEntry={!showPassword}
-                      value={confirmidPassword}
-                      onChangeText={text => setConfirmidPassword(text)}
                     />
                     <Icon
                       name={showPassword ? 'eye-slash' : 'eye'}
@@ -407,7 +402,7 @@ const styles = StyleSheet.create({
     width: 120,
     height: 90,
     resizeMode: 'contain',
-    marginTop: 20,
+    marginTop: 70,
     marginBottom: 10,
     alignSelf: 'center',
   },

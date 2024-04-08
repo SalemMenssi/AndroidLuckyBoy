@@ -13,7 +13,7 @@ import {
   ImageBackground,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import Icon1 from 'react-native-vector-icons/FontAwesome5';
+import Icon1 from 'react-native-vector-icons/FontAwesome';
 import LinearGradient from 'react-native-linear-gradient';
 import RadialGradient from 'react-native-radial-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -375,12 +375,13 @@ const AdminStore = () => {
 
   return (
     <ScrollView style={styles.container}>
-      <View
-        style={[styles.header, {backgroundColor: '#5AC2E3'}]}
-        // colors={['#3C84AC', '#5AC2E3', '#3C84AC']}
-      >
+      <LinearGradient
+        colors={['#0094B4', '#00D9F7']}
+        start={{x: 0, y: 0}}
+        end={{x: 1, y: 1}}
+        style={[styles.header]}>
         <Text style={styles.HeaderTitle}>Store</Text>
-      </View>
+      </LinearGradient>
 
       {/* Cards */}
       <View
@@ -859,7 +860,7 @@ const styles = StyleSheet.create({
     textShadowRadius: 5,
     fontWeight: '500',
     alignSelf: 'center',
-    marginBottom: windowHeight * 0.15,
+    marginBottom: windowHeight * 0.015,
     fontFamily: 'OriginalSurfer-Regular',
     letterSpacing: 2,
   },
@@ -876,7 +877,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFFFFF',
     borderColor: '#000',
     marginVertical: 10,
-    height: windowHeight * 0.35,
+    height: windowHeight * 0.3,
     width: windowWidth * 0.43,
     borderRadius: 13,
     zIndex: 100,
@@ -898,8 +899,9 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '40%',
     paddingHorizontal: 10,
-    paddingVertical: 10,
+    paddingVertical: 20,
     backgroundColor: 'rgba(0,0,0,0.5)',
+    transform: 'scale(1.05)',
   },
   content: {
     flexDirection: 'row',
@@ -1013,10 +1015,10 @@ const styles = StyleSheet.create({
   },
   basketButton: {
     position: 'absolute',
-    top: 40,
+    top: 60,
     right: 20,
     borderRadius: 50,
-    width: 70,
+    width: 60,
     height: 40,
     justifyContent: 'center',
     alignItems: 'center',
@@ -1062,7 +1064,7 @@ const styles = StyleSheet.create({
   cardContainer: {
     paddingVertical: 20,
     paddingHorizontal: 10,
-    top: windowHeight * -0.15,
+    top: windowHeight * -0.1,
     backgroundColor: '#fefefe',
     borderRadius: 40,
   },
@@ -1156,7 +1158,7 @@ const styles = StyleSheet.create({
   header: {
     position: 'relative',
     width: windowWidth,
-    height: windowHeight * 0.4,
+    height: windowHeight * 0.35,
     backgroundColor: '#b3e0ff',
     justifyContent: 'center',
   },
@@ -1234,12 +1236,9 @@ const styles = StyleSheet.create({
     marginHorizontal: 20,
     marginVertical: 20,
   },
-  arrowIcon: {
-    width: 20,
-    height: 20,
-    tintColor: '#000',
-    resizeMode: 'contain',
-  },
+
+  arrowIcon: {width: 40, resizeMode: 'contain'},
+
   imageContainer: {
     width: windowWidth,
     height: windowHeight * 0.55,
@@ -1339,7 +1338,7 @@ const styles = StyleSheet.create({
     fontSize: 30,
     fontFamily: 'OriginalSurfer-Regular',
     color: '#383E44',
-    marginTop: windowHeight * 0.05,
+    marginTop: windowHeight * 0.1,
     alignSelf: 'center',
   },
   formSubTitle: {

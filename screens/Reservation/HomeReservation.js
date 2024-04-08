@@ -17,22 +17,23 @@ import axios from 'axios';
 import {url} from '../../url';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import jwtDecode from 'jwt-decode';
+import LinearGradient from 'react-native-linear-gradient';
 
 const DatePickerCostum = props => {
   const [date, setDate] = useState(new Date());
 
   return (
     <DatePicker
-      textColor="#fff"
+      textColor="#000"
       mode="time"
       date={props.selectedTime}
       onDateChange={props.setSelectedTime}
-      style={{backgroundColor: '#3C84AC', borderRadius: 10, padding: 10}} // Add your custom styles here
+      style={{backgroundColor: '#fff', borderRadius: 10, padding: 10}} // Add your custom styles here
     />
   );
 };
 
-const HomeReservation = ({card, close}) => {
+const HomeReservation = ({card, close, closeParent}) => {
   const [selectedTime, setSelectedTime] = useState(new Date());
   const [showPicker, setShowPicker] = useState(false);
   const [numberOfPeople, setNumberOfPeople] = useState(1);
@@ -129,14 +130,14 @@ const HomeReservation = ({card, close}) => {
 
   const Sabmit = () => {
     addBooking();
-
+    close();
     navigation.navigate('Reserve');
   };
 
   return (
     <ScrollView showsVerticalScrollIndicator={false}>
       <View style={styles.container}>
-        <TouchableOpacity style={styles.returnBtn}>
+        <TouchableOpacity onPress={close} style={styles.returnBtn}>
           <Image
             style={styles.arrowIcon}
             source={require('../../assets/icons/fleche.png')}
@@ -146,8 +147,11 @@ const HomeReservation = ({card, close}) => {
         <Text style={styles.title}>Reservation</Text>
         <Text style={styles.subtitle}>Select a date</Text>
         <View style={styles.calendarBox}>
-          <View
-            style={[styles.gradient, {backgroundColor: '#3C84AC'}]}
+          <LinearGradient
+            colors={['#0094B4', '#00Daf8']}
+            start={{x: 0, y: 0}}
+            end={{x: 1, y: 1}}
+            style={[styles.gradient]}
             // colors={['#3C84AC', '#5AC2E3', '#3C84AC']}
           >
             <Calendar
@@ -162,6 +166,7 @@ const HomeReservation = ({card, close}) => {
                 todayTextColor: '#fff',
                 textDisabledColor: 'rgba(255, 255, 255, 0.28)',
                 dayTextColor: '#fff',
+                textDayFontWeight: '500',
                 textSectionTitleColor: '#fff',
                 textMonthFontWeight: 'bold',
                 textMonthFontSize: 20,
@@ -170,7 +175,7 @@ const HomeReservation = ({card, close}) => {
               }}
               markedDates={markedDates}
             />
-          </View>
+          </LinearGradient>
         </View>
 
         <Text style={styles.subtitle}>Select Time</Text>
@@ -196,29 +201,42 @@ const HomeReservation = ({card, close}) => {
             onPress={decrementNumberOfPeople}
             style={[
               styles.button,
-              {borderTopLeftRadius: 10, borderBottomLeftRadius: 10},
+              {
+                borderRadius: 50,
+                borderWidth: 2,
+                borderColor: '#5ac2e3',
+                backgroundColor: '#fff',
+                color: '#5ac2e3',
+              },
             ]}>
-            <Text style={styles.buttonText}>-</Text>
+            <Text style={[styles.buttonText, {color: '#5ac2e3'}]}>-</Text>
           </TouchableOpacity>
           <Text style={styles.numberOfPeople}>{numberOfPeople}</Text>
           <TouchableOpacity
             onPress={incrementNumberOfPeople}
             style={[
               styles.button,
-              {borderTopRightRadius: 10, borderBottomRightRadius: 10},
+              {
+                borderRadius: 50,
+                borderWidth: 2,
+                borderColor: '#5ac2e3',
+                backgroundColor: '#fff',
+                color: '#5ac2e3',
+              },
             ]}>
-            <Text style={styles.buttonText}>+</Text>
+            <Text style={[styles.buttonText, {color: '#5ac2e3'}]}>+</Text>
           </TouchableOpacity>
         </View>
         <TouchableOpacity style={styles.reserveButton} onPress={Sabmit}>
-          <RadialGradient
-            style={styles.RadialEffect}
-            colors={['#5AC2E3', '#4698BD', '#3C84AC']}
-            stops={[0.2, 0.5, 1]}
-            center={[300, 100]}
-            radius={300}>
+          <LinearGradient
+            colors={['#0094B4', '#00DaF8']}
+            start={{x: 0, y: 0}}
+            end={{x: 0.9, y: 0.9}}
+            style={[styles.RadialEffect, {backgroundColor: '#5ac2e3'}]}
+            //colors={['#5AC2E3', '#4698BD', '#3C84AC']}
+          >
             <Text style={styles.buttonText}>Reserve</Text>
-          </RadialGradient>
+          </LinearGradient>
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -236,26 +254,28 @@ const styles = StyleSheet.create({
     height: '100%',
     backgroundColor: '#fff',
     alignItems: 'center',
+    paddingTop: 50,
   },
   returnBtn: {position: 'absolute', left: 0},
   arrowIcon: {
-    top: 30,
-    left: 20,
+    marginTop: 50,
+    marginLeft: 15,
+    width: 40,
+    resizeMode: 'contain',
+    tintColor: '#383e44',
   },
   title: {
-    marginTop: 17,
+    marginTop: windowHeight * 0.045,
     textAlign: 'center',
     fontSize: 36,
     fontWeight: '500',
-    color: '#0A0A0A',
+    color: '#383e44',
   },
   subtitle: {
-    color: '#FFD466',
+    color: '#5ac2e3',
     fontSize: 24,
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
-    textShadowOffset: {width: -1, height: 1},
-    textShadowRadius: 1.2,
-    fontFamily: 'OriginalSurfer-Regular',
+
+    fontFamily: 'Poppins-Medium',
     marginVertical: windowHeight * 0.03,
   },
   calendar: {
@@ -277,7 +297,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
   },
   reserveButton: {
-    borderRadius: 60,
+    borderRadius: 15,
     width: '40%',
     height: windowHeight * 0.06,
     alignSelf: 'center',
@@ -303,8 +323,8 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   button: {
-    width: 40,
-    height: 40,
+    width: 35,
+    height: 35,
 
     backgroundColor: '#3C85AD',
     justifyContent: 'center',
@@ -314,16 +334,16 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: '#fff',
+    top: -1,
   },
   numberOfPeople: {
     fontSize: 24,
     paddingHorizontal: 30,
     color: '#0A0A0A',
     backgroundColor: '#fff',
-    elevation: 5,
   },
   calendarBox: {
-    height: windowHeight * 0.5,
+    height: windowHeight * 0.37,
     width: windowWidth * 0.8,
     borderRadius: 20,
     overflow: 'hidden',

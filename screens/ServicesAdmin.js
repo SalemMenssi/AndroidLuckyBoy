@@ -16,7 +16,7 @@ import {
 } from 'react-native';
 import ImagePicker from 'react-native-image-crop-picker';
 
-import RadialGradient from 'react-native-radial-gradient';
+import LinearGradient from 'react-native-linear-gradient';
 import {url} from '../url';
 import axios from 'axios';
 import {Calendar} from 'react-native-calendars';
@@ -203,7 +203,7 @@ const ServicesAdmin = () => {
 
       if (response.status === 200) {
         console.log('Image uploaded successfully', response.data.image);
-        setNewServiceImage(response.data.image);
+        return response.data.image;
       } else {
         console.log('Image upload failed');
       }
@@ -275,6 +275,7 @@ const ServicesAdmin = () => {
       price: Number(newServicePrice),
     });
     setModalEditService(false);
+    setModalInfoVisible(true);
   };
   const handleUpdateImage = async id => {
     try {
@@ -284,14 +285,14 @@ const ServicesAdmin = () => {
         cropping: true,
       });
 
-      await uploadImageToUpdate(image);
+      let newImage = await uploadImageToUpdate(image);
       setSelectedService({
         ...selectedService,
-        image: newServiceImage,
+        image: newImage,
       });
       await axios.put(`${url}/api/services/${id}`, {
         ...selectedService,
-        image: newServiceImage,
+        image: newImage,
       });
       setNewServiceImage({});
       await getServices();
@@ -303,7 +304,11 @@ const ServicesAdmin = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.heading}>Activities</Text>
-      <ScrollView style={{maxHeight: windowHeight * 0.75}}>
+      <ScrollView
+        style={{
+          maxHeight: windowHeight * 0.75,
+          marginBottom: windowHeight * 0.12,
+        }}>
         {Services &&
           Services.map(post => (
             <View key={post._id} style={styles.postCard}>
@@ -340,18 +345,16 @@ const ServicesAdmin = () => {
       <TouchableOpacity
         style={styles.addPost}
         onPress={() => setModalVisible(true)}>
-        <View
-          // colors={['#3C84AC', '#5AC2E3', '#3C84AC']}
-
+        <LinearGradient
+          colors={['#0094B4', '#00DAF8']}
+          start={{x: 0, y: 0.5}}
+          end={{x: 0.5, y: 1}}
           style={{
-            width: '100%',
-            height: '100%',
-            alignItems: 'center',
             justifyContent: 'center',
             backgroundColor: '#5AC2E3',
           }}>
           <Text style={styles.addPostText}>+</Text>
-        </View>
+        </LinearGradient>
       </TouchableOpacity>
 
       <Modal
@@ -408,12 +411,13 @@ const ServicesAdmin = () => {
           )}
 
           <TouchableOpacity style={styles.reserveButton} onPress={addService}>
-            <View
-              style={[styles.RadialEffect, {backgroundColor: '#4698BD'}]}
-              // colors={['#5AC2E3', '#4698BD', '#3C84AC']}
-            >
+            <LinearGradient
+              colors={['#0094B4', '#00DaF8']}
+              start={{x: 0, y: 0}}
+              end={{x: 0.9, y: 0.9}}
+              style={[styles.RadialEffect, {backgroundColor: '#5ac2e3'}]}>
               <Text style={styles.buttonText}>Add Service</Text>
-            </View>
+            </LinearGradient>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.close}
@@ -436,7 +440,7 @@ const ServicesAdmin = () => {
 
           <View style={styles.ServiceHeader}>
             <View style={styles.informationService}>
-              <Text style={styles.price}>{selectedService.price}</Text>
+              <Text style={styles.price}>{selectedService.price} DT</Text>
 
               <Text style={styles.cardDescription}>
                 {selectedService.discription}
@@ -446,6 +450,7 @@ const ServicesAdmin = () => {
               <TouchableOpacity
                 onPress={() => {
                   setModalEditService(true);
+                  setModalInfoVisible(false);
                   setNewServicePrice(selectedService.price);
                   setNewServiceDescription(selectedService.discription);
                   setNewServiceTitle(selectedService.title);
@@ -455,7 +460,11 @@ const ServicesAdmin = () => {
                   source={require('../assets/icons/edit.png')}
                 />
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => setModalDeleteService(true)}>
+              <TouchableOpacity
+                onPress={() => {
+                  setModalInfoVisible(false);
+                  setModalDeleteService(true);
+                }}>
                 <Image
                   style={{width: 25, height: 40, resizeMode: 'contain'}}
                   source={require('../assets/icons/deleteIcon.png')}
@@ -511,14 +520,21 @@ const ServicesAdmin = () => {
             </Text>
             <View style={styles.buttonContainer}>
               <TouchableOpacity
-                style={[styles.exitModalButton, styles.cancelButton]}
-                onPress={() => setModalDeleteService(false)}>
-                <Text style={[styles.buttonText, {color: '#0080B2'}]}>No</Text>
+                style={[
+                  styles.exitModalButton,
+                  styles.cancelButton,
+                  {borderColor: '#F68A72'},
+                ]}
+                onPress={() => {
+                  setModalDeleteService(false);
+                  setModalInfoVisible(true);
+                }}>
+                <Text style={[styles.buttonText, {color: '#F68A72'}]}>No</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => handelDeleteService(selectedService._id)}
-                style={styles.exitModalButton}>
-                <Text style={[styles.buttonText, {color: '#F68A72'}]}>Yes</Text>
+                style={[styles.exitModalButton, {borderColor: '#0080B2'}]}>
+                <Text style={[styles.buttonText, {color: '#0080B2'}]}>Yes</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -557,7 +573,10 @@ const ServicesAdmin = () => {
             <View style={styles.buttonContainer}>
               <TouchableOpacity
                 style={[styles.exitModalButton, styles.cancelButton]}
-                onPress={() => setModalEditService(false)}>
+                onPress={() => {
+                  setModalEditService(false);
+                  setModalInfoVisible(true);
+                }}>
                 <Text style={[styles.buttonText, {color: '#0080B2'}]}>No</Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -583,14 +602,16 @@ const styles = StyleSheet.create({
   },
   heading: {
     color: '#383E44',
-    fontFamily: 'OriginalSurfer-Regular',
+    fontFamily: 'Poppins-Bold',
     fontSize: 46,
     alignSelf: 'center',
     marginHorizontal: 20,
+    marginTop: windowHeight * 0.07,
+    marginBottom: 20,
   },
   postCard: {
     alignSelf: 'center',
-    height: windowHeight * 0.5,
+    height: windowHeight * 0.37,
     width: windowWidth * 0.8,
     borderRadius: 20,
     marginVertical: 20,
@@ -604,10 +625,14 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.5,
     shadowRadius: 10,
-    overflow: 'hidden',
   },
-  cardImage: {width: '100%', height: '100%'},
-  Content: {},
+  cardImage: {
+    width: '100%',
+    height: '65%',
+    borderBottomLeftRadius: 20,
+    borderBottomRightRadius: 20,
+  },
+  Content: {height: '40%', justifyContent: 'space-between'},
   postHeader: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -627,15 +652,15 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     lineHeight: 24,
   },
-  seeMoreButton: {position: 'absolute', right: 10, bottom: 8},
+  seeMoreButton: {position: 'absolute', right: 10, bottom: 13},
   seeMoreButtonText: {
     color: '#3C84AC',
-    fontFamily: 'OriginalSurfer-Regular',
+    fontFamily: 'Poppins-Bold',
     fontSize: 14,
   },
   cardDate: {
     fontSize: 12,
-    fontFamily: 'OriginalSurfer-Regular',
+    fontFamily: 'Poppins-Bold',
     color: '#383E44',
     marginBottom: 5,
   },
@@ -650,7 +675,7 @@ const styles = StyleSheet.create({
   },
   likeIcon: {height: windowWidth * 0.07, width: windowWidth * 0.07},
   likedValue: {
-    fontFamily: 'OriginalSurfer-Regular',
+    fontFamily: 'Poppins-Bold',
     color: '#383E44',
     fontSize: 26,
     marginHorizontal: 10,
@@ -661,11 +686,12 @@ const styles = StyleSheet.create({
     backgroundColor: '#fafafa',
   },
   modalTitle: {
-    fontFamily: 'OriginalSurfer-Regular',
+    fontFamily: 'Poppins-Bold',
     color: '#000',
     fontSize: 40,
     alignSelf: 'center',
     marginBottom: windowHeight * 0.05,
+    marginTop: windowHeight * 0.07,
   },
   label: {
     fontFamily: 'Poppins-Medium',
@@ -706,9 +732,11 @@ const styles = StyleSheet.create({
     color: '#fff',
     height: '100%',
     fontSize: 46,
+    textAlign: 'center',
+    paddingTop: 5,
   },
-  close: {position: 'absolute', top: windowHeight * 0.05, left: 20},
-  arrowIcon: {width: 20, height: 20},
+  close: {position: 'absolute', top: 25, left: 0},
+  arrowIcon: {width: 40, resizeMode: 'contain'},
   aploadContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -716,9 +744,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   reserveButton: {
-    borderRadius: 60,
+    borderRadius: 15,
     width: '50%',
-    height: windowHeight * 0.09,
+    height: windowHeight * 0.07,
     alignSelf: 'center',
     elevation: 5,
     overflow: 'hidden',
@@ -734,7 +762,7 @@ const styles = StyleSheet.create({
   buttonText: {
     fontSize: 25,
     color: '#fff',
-    fontFamily: 'OriginalSurfer-Regular',
+    fontFamily: 'Poppins-Bold',
   },
   infoServicecontainer: {
     flexDirection: 'row',
@@ -767,7 +795,7 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0, 0, 0, 0.5)',
     textShadowOffset: {width: -1, height: 1},
     textShadowRadius: 1.5,
-    fontFamily: 'OriginalSurfer-Regular',
+    fontFamily: 'Poppins-Bold',
   },
   informationService: {
     padding: 10,
@@ -778,6 +806,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     elevation: 5,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   AlertmodalContent: {
     elevation: 10,
@@ -789,7 +818,7 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 10,
     alignItems: 'center',
-    height: windowHeight * 0.4,
+    height: windowHeight * 0.34,
     width: windowWidth * 0.75,
   },
   AlertmodalImage: {
@@ -825,23 +854,24 @@ const styles = StyleSheet.create({
     shadowColor: 'rgba(56, 62, 68, 1)',
     shadowOffset: {width: 1, height: 1},
     shadowOpacity: 1,
-    shadowRadius: 5,
+    shadowRadius: 3,
     marginVertical: 20,
   },
   buttonContainer: {
     flexDirection: 'row',
   },
   exitModalButton: {
-    paddingVertical: 10,
+    paddingVertical: 8,
     paddingHorizontal: 20,
-    borderRadius: 5,
+    borderRadius: 10,
     marginHorizontal: 10,
+    borderWidth: 2,
   },
   Row: {flexDirection: 'row', alignItems: 'center'},
   uploadButtonUpdate: {
     alignSelf: 'flex-end',
     position: 'absolute',
-    top: windowHeight * 0.29,
+    top: windowHeight * 0.33,
     zIndex: 100,
   },
   uploadButton: {},

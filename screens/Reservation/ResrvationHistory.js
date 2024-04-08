@@ -22,10 +22,13 @@ import {url} from '../../url';
 import FoodInfo from '../FoodInfo';
 // import RadialGradient from 'react-native-radial-gradient';
 import MaskedView from '@react-native-masked-view/masked-view';
-// import LinearGradient from 'react-native-linear-gradient';
+import LinearGradient from 'react-native-linear-gradient';
 import Icon1 from 'react-native-vector-icons/Ionicons';
 import EventInfo from '../EventInfo';
 import messaging from '@react-native-firebase/messaging';
+import {useNavigation} from '@react-navigation/native';
+
+Icon.loadFont();
 const ReservationHistory = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [eventModalVisible, setEventModalVisible] = useState(false);
@@ -40,7 +43,7 @@ const ReservationHistory = () => {
   const [notifications, setNotifications] = useState([]);
 
   const fadeAnim = useState(new Animated.Value(0))[0];
-
+  const navigation = useNavigation();
   useEffect(() => {
     Animated.timing(fadeAnim, {
       toValue: 1,
@@ -52,9 +55,8 @@ const ReservationHistory = () => {
   const getToken = async user => {
     try {
       const fcmtoken = await messaging().getToken();
-      console.log(user);
       let isSaved = user && user.fcmtoken.includes(fcmtoken);
-      console.log(isSaved);
+      // console.log(fcmtoken);
       if (!isSaved) {
         await updateUserFCMToken(fcmtoken);
       }
@@ -67,10 +69,6 @@ const ReservationHistory = () => {
     const enabled =
       authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
       authStatus === messaging.AuthorizationStatus.PROVISIONAL;
-
-    if (enabled) {
-      console.log('Authorization status:', authStatus);
-    }
   };
   const retrieveNotificationData = async () => {
     try {
@@ -98,6 +96,7 @@ const ReservationHistory = () => {
   }, []);
   useEffect(() => {
     retrieveNotificationData();
+    getCurrentUser();
   }, [notifications]);
 
   const getCurrentUser = async () => {
@@ -118,6 +117,7 @@ const ReservationHistory = () => {
         ...Current,
         fcmtoken: [...Current.fcmtoken, token],
       });
+
       await getCurrentUser();
     } catch (error) {
       console.log('update', error);
@@ -189,8 +189,12 @@ const ReservationHistory = () => {
   };
 
   const handleSeeMore = card => {
-    setSelectedCard(card);
-    setModalVisible(true);
+    navigation.navigate('ReservationCard', {
+      card: card,
+      getServices: () => getServices(),
+    });
+    // setSelectedCard(card);
+    // setModalVisible(true);
   };
   const handleSeeMoreEvent = card => {
     setSelectedEvent(card);
@@ -212,10 +216,14 @@ const ReservationHistory = () => {
     <ScrollView
       contentContainerStyle={styles.container}
       scrollEnabled={!showNotif}>
-      <View style={styles.header}>
+      <LinearGradient
+        colors={['#0094B4', '#00D9F7']}
+        start={{x: 0, y: 0}}
+        end={{x: 1, y: 1}}
+        style={styles.header}>
         <TouchableOpacity
           style={styles.notificationContainer}
-          onPress={() => setShowNotif(true)}>
+          onPress={() => navigation.navigate('Notif')}>
           <Icon name="bell" size={20} color="#000" />
           {notifications.length > 0 && (
             <View style={styles.notificationBadge}>
@@ -225,7 +233,6 @@ const ReservationHistory = () => {
             </View>
           )}
         </TouchableOpacity>
-
         <View style={styles.profileContent}>
           <Image
             source={{uri: `${url}${Current.avatar && Current.avatar.url}`}}
@@ -234,7 +241,7 @@ const ReservationHistory = () => {
           <Text style={styles.HeaderText}>{`HI, ${Current.username}`}</Text>
         </View>
         <Text style={styles.welcome}>Would you like to enjoy your day ?</Text>
-      </View>
+      </LinearGradient>
       <View style={styles.searchBar}>
         <Icon
           name="search"
@@ -276,7 +283,19 @@ const ReservationHistory = () => {
                   source={{uri: `${url}${item.image.url}`}}
                   style={styles.ServicesCardBackground}
                   resizeMode="cover">
-                  <Text style={styles.ServicesTitle}>{item.title}</Text>
+                  <View style={styles.titleContainer}>
+                    <Text style={styles.ServicesTitle}>{item.title}</Text>
+                    <View style={styles.booking}>
+                      <Text style={[styles.bookingText, {marginRight: 5}]}>
+                        Book Now
+                      </Text>
+                      <Image
+                        style={[styles.seemoreService]}
+                        source={require('../../assets/icons/seemore.png')}
+                        resizeMode="contain"
+                      />
+                    </View>
+                  </View>
                 </ImageBackground>
               </TouchableOpacity>
             )}
@@ -284,7 +303,7 @@ const ReservationHistory = () => {
             showsHorizontalScrollIndicator={false}
           />
         </Animated.View>
-        <Text style={styles.SubTitle}>Join our events</Text>
+        <Text style={[styles.SubTitle, {marginTop: 40}]}>Join our events</Text>
         <View style={styles.recommendationContainer}>
           <FlatList
             data={Events}
@@ -296,31 +315,29 @@ const ReservationHistory = () => {
                   style={styles.recommendationImage}
                 />
                 <View style={styles.recommendationInfo}>
-                  <Text style={styles.recommendationTitle}>{item.title}</Text>
+                  <View
+                    style={{justifyContent: 'space-between', height: '100%'}}>
+                    <Text
+                      style={[styles.ServicesTitle, {top: -10, fontSize: 32}]}>
+                      {item.title}
+                    </Text>
+                    <Text style={styles.bookingText}>
+                      {item.date.slice(0, 10)}
+                    </Text>
+                  </View>
                   <TouchableOpacity
-                    style={styles.ratingContainer}
-                    onPress={() =>
-                      item.likes.includes(Current._id)
-                        ? UnlikeEvent(item)
-                        : likeEvent(item)
-                    }>
-                    <Icon1
-                      name={
-                        item.likes.includes(Current._id)
-                          ? 'heart'
-                          : 'heart-outline'
-                      }
-                      size={30}
-                      color="#F68A72"
+                    onPress={() => handleSeeMoreEvent(item)}
+                    style={styles.consultIconContainer}>
+                    <Image
+                      style={[
+                        styles.seemoreService,
+                        {marginTop: 43, marginRight: -10},
+                      ]}
+                      source={require('../../assets/icons/seemore.png')}
+                      resizeMode="contain"
                     />
-                    <Text style={styles.ratingText}>{item.likes.length}</Text>
                   </TouchableOpacity>
                 </View>
-                <TouchableOpacity
-                  onPress={() => handleSeeMoreEvent(item)}
-                  style={styles.consultIconContainer}>
-                  <Icon name="arrow-right" size={20} color="#000" />
-                </TouchableOpacity>
               </View>
             )}
             horizontal
@@ -328,14 +345,21 @@ const ReservationHistory = () => {
           />
         </View>
 
-        <Text style={[styles.SubTitle, {alignSelf: 'center'}]}>
-          Follow us !
-        </Text>
-
         <Image
           style={styles.head}
           source={require('../../assets/icons/anim.png')}
         />
+        <Text
+          style={[
+            {
+              alignSelf: 'center',
+              color: '#00daf8',
+              fontFamily: 'OriginalSurfer-Regular',
+              fontSize: 50,
+            },
+          ]}>
+          Follow us !
+        </Text>
         <View style={styles.socialMedia}>
           <Image
             source={require('../../assets/icons/facebook.png')}
@@ -383,28 +407,6 @@ const ReservationHistory = () => {
           </View>
         </View>
       </Modal>
-      {showNotif ? (
-        <View style={styles.notifbox}>
-          <View style={styles.notifHeader}>
-            <Text style={styles.notifHeaderTitle}>Notifications</Text>
-            <TouchableOpacity
-              style={styles.close}
-              onPress={() => {
-                setShowNotif(false);
-              }}>
-              <Icon name="close" size={20} color="#000" />
-            </TouchableOpacity>
-          </View>
-          <ScrollView>
-            {notifications.map((item, index) => (
-              <View key={index} style={styles.notifitem}>
-                <Text style={styles.notiftitle}>{item.title}</Text>
-                <Text style={styles.notifbody}>{item.body}</Text>
-              </View>
-            ))}
-          </ScrollView>
-        </View>
-      ) : null}
     </ScrollView>
   );
 };
@@ -433,6 +435,14 @@ const styles = StyleSheet.create({
     elevation: 5,
     zIndex: 15,
     top: windowHeight * -0.1,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 1,
+    shadowRadius: 5,
   },
   searchIcon: {
     marginRight: 10,
@@ -449,10 +459,20 @@ const styles = StyleSheet.create({
     color: '#383E44',
     fontSize: 20,
   },
+  seemoreService: {
+    resizeMode: 'contain',
+    width: 30,
+    padding: 5,
+    marginLeft: 5,
+    height: 30,
+    borderRadius: 50,
+
+    borderColor: '#3C84AC',
+  },
   arrowIcon: {
-    position: 'absolute',
-    left: 15,
-    top: 19,
+    resizeMode: 'contain',
+    width: 40,
+    height: 40,
   },
   title: {
     width: '100%',
@@ -505,15 +525,29 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'flex-end',
   },
+  titleContainer: {
+    position: 'relative',
+    height: windowHeight * 0.11,
+    width: '100%',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#fff',
+    paddingBottom: 50,
+    paddingHorizontal: 10,
+  },
+  booking: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    alignSelf: 'flex-end',
+    marginTop: 10,
+  },
+  bookingText: {fontSize: 20, color: '#0094b4'},
   ServicesTitle: {
-    color: '#FFFFFF',
-    fontSize: 40,
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
-    textShadowOffset: {width: -1, height: 1},
-    elevation: 5,
-    textShadowRadius: 5,
-    marginBottom: 15,
+    color: '#000',
+    fontSize: 36,
+
     fontFamily: 'Poppins-Regular',
+    alignSelf: 'flex-start',
   },
   modalContainer: {},
   modalContent: {},
@@ -535,13 +569,13 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     borderRadius: 20,
     elevation: 8,
-    shadowColor: '#000',
+    shadowColor: '#383e44',
     shadowOffset: {
       width: 0,
-      height: 5,
+      height: 0,
     },
-    shadowOpacity: 1,
-    shadowRadius: 40,
+    shadowOpacity: 0.5,
+    shadowRadius: 5,
     marginHorizontal: 20,
     backgroundColor: '#fff',
   },
@@ -569,31 +603,48 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   recommendationContainer: {
-    marginTop: 20,
-    paddingHorizontal: 10,
+    marginTop: 0,
+    paddingHorizontal: 20,
+    paddingVertical: 40,
+    elevation: 10,
+    shadowColor: '#383e44',
+    shadowOffset: {
+      width: 0,
+      height: 0,
+    },
+    shadowOpacity: 0.5,
+    shadowRadius: 10,
   },
   recommendationCard: {
-    width: 250,
+    width: windowWidth * 0.7,
+    height: windowWidth * 0.7,
     marginRight: 10,
     borderWidth: 1,
     borderColor: '#ddd',
-    borderRadius: 10,
+    borderRadius: 20,
+    backgroundColor: '#fff',
+
     overflow: 'hidden',
   },
   recommendationImage: {
     width: '100%',
-    height: 150,
+    height: '70%',
   },
   recommendationInfo: {
     padding: 10,
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    height: '30%',
   },
   recommendationTitle: {
     fontSize: 23,
     fontFamily: 'Poppins-Regular',
     color: '#383E44',
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
-    textShadowOffset: {width: 1, height: 1},
-    textShadowRadius: 1,
+
+    // textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    // textShadowOffset: {width: 1, height: 1},
+    // textShadowRadius: 1,
   },
   ratingContainer: {
     flexDirection: 'row',
@@ -607,11 +658,8 @@ const styles = StyleSheet.create({
     fontFamily: 'OriginalSurfer-Regular',
   },
   consultIconContainer: {
-    position: 'absolute',
-    bottom: 15,
-    right: 10,
-    backgroundColor: '#fff',
-    padding: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 9,
     borderRadius: 50,
   },
   QuoteImage: {
@@ -693,7 +741,7 @@ const styles = StyleSheet.create({
   notifbox: {
     position: 'absolute',
     paddingBottom: 20,
-    width: windowWidth * 0.7,
+    width: windowWidth,
     backgroundColor: '#fff',
     zIndex: 10000,
     borderRadius: 20,
@@ -705,9 +753,8 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 1,
     shadowRadius: 40,
-    top: windowHeight * 0.25,
-    maxHeight: windowHeight * 0.55,
-    minHeight: windowHeight * 0.55,
+    maxHeight: windowHeight,
+    minHeight: windowHeight,
   },
   notifitem: {
     marginBottom: 10,

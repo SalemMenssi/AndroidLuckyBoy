@@ -28,8 +28,8 @@ const Profile = () => {
   const [isEditingEmail, setIsEditingEmail] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
   const [isEditingPassword, setIsEditingPassword] = useState(false);
-  const [bankName, setBankName] = useState('');
-  const [isEditingBankName, setIsEditingBankName] = useState(false);
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [isEditingPhoneNumber, setIsEditingPhoneNumber] = useState(false);
   const [rib, setRib] = useState('');
   const [isEditingRib, setIsEditingRib] = useState(false);
   const [Current, setCurrent] = useState({});
@@ -47,8 +47,8 @@ const Profile = () => {
   const handleEditPassword = () => {
     setIsEditingPassword(true);
   };
-  const handleEditBankName = () => {
-    setIsEditingBankName(true);
+  const handleEditPhoneNumber = () => {
+    setIsEditingPhoneNumber(true);
   };
 
   const handleEditRib = () => {
@@ -65,8 +65,8 @@ const Profile = () => {
   const handlePasswordChange = text => {
     setPassword(text);
   };
-  const handleBankNameChange = text => {
-    setBankName(text);
+  const handlePhoneNumberChange = text => {
+    setPhoneNumber(text);
   };
 
   const handleRibChange = text => {
@@ -89,9 +89,9 @@ const Profile = () => {
     setIsEditingRib(false);
     setRib(Current.rib);
   };
-  const handleCancelBankName = () => {
-    setIsEditingBankName(false);
-    setBankName(Current.BankName);
+  const handleCancelPhoneNumber = () => {
+    setIsEditingPhoneNumber(false);
+    setPhoneNumber(Current.Number);
   };
   const handleConfirmEmail = async () => {
     setIsEditingEmail(false);
@@ -107,8 +107,8 @@ const Profile = () => {
     setPassword("'New Password'");
   };
 
-  const handleConfirmBankName = async () => {
-    setIsEditingBankName(false);
+  const handleConfirmPhoneNumber = async () => {
+    setIsEditingPhoneNumber(false);
     await updateUser();
   };
 
@@ -138,7 +138,7 @@ const Profile = () => {
       setName(currentUser.data.user.fullName);
       setUserName(currentUser.data.user.username);
       setRib(currentUser.data.user.rib);
-      setBankName(currentUser.data.user.BankName);
+      setPhoneNumber(currentUser.data.user.Number);
     } catch (error) {
       console.log(error);
     }
@@ -151,7 +151,7 @@ const Profile = () => {
         email: email,
         fullName: name,
         rib: rib,
-        BankName: bankName,
+        Number: phoneNumber,
       });
       await getCurrentUser();
     } catch (error) {
@@ -359,6 +359,41 @@ const Profile = () => {
         <View style={styles.contentInfo}>
           <Image
             style={styles.labeleIcon}
+            source={require('../assets/icons/phone.png')}
+          />
+          {isEditingPhoneNumber ? (
+            <View style={styles.inputContainer}>
+              <TextInput
+                style={[
+                  styles.inputText,
+                  isEditingPhoneNumber && styles.transparent,
+                ]}
+                value={phoneNumber}
+                onChangeText={handlePhoneNumberChange}
+                autoFocus={true}
+              />
+              <TouchableOpacity onPress={handleConfirmPhoneNumber}>
+                <Icon name="check" size={20} color="#000" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{marginLeft: 30}}
+                onPress={handleCancelPhoneNumber}>
+                <Icon name="remove" size={20} color="#000" />
+              </TouchableOpacity>
+            </View>
+          ) : (
+            <View style={styles.inputContainer}>
+              <Text style={styles.TextValue}>{phoneNumber}</Text>
+              <TouchableOpacity onPress={handleEditPhoneNumber}>
+                <Icon name="edit" size={20} color="#000" />
+              </TouchableOpacity>
+            </View>
+          )}
+        </View>
+
+        <View style={styles.contentInfo}>
+          <Image
+            style={styles.labeleIcon}
             source={require('../assets/icons/Password.png')}
           />
           {isEditingPassword ? (
@@ -395,50 +430,67 @@ const Profile = () => {
       <Text style={styles.headingText}>My Activity</Text>
 
       <View style={styles.activityContainer}>
-        <TouchableOpacity
-          onPress={() => navigation.navigate('Event')}
-          style={[styles.activityItem, {backgroundColor: '#3C84AC'}]}>
-          <Image
-            style={styles.activityIcon}
-            source={require('../assets/icons/PayIcon.png')}
-          />
-          <Text style={styles.activityText}>Services</Text>
+        <TouchableOpacity onPress={() => navigation.navigate('Event')}>
+          <LinearGradient
+            colors={['#0094B4', '#00D9F7']}
+            start={{x: 1, y: 0}}
+            end={{x: 1.1, y: 1}}
+            style={[styles.activityItem, {backgroundColor: '#3C84AC'}]}>
+            <Image
+              style={styles.activityIcon}
+              source={require('../assets/icons/PayIcon.png')}
+            />
+            <Text style={styles.activityText}>Services</Text>
+          </LinearGradient>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[styles.activityItem, {backgroundColor: '#3C84AC'}]}
-          onPress={() => navigation.navigate('Reserve')}>
-          <Image
-            style={styles.activityIcon}
-            source={require('../assets/icons/reservationIcon.png')}
-          />
-          <Text style={styles.activityText}>Reservation</Text>
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.activityContainer}>
-        <TouchableOpacity
-          onPress={() => navigation.navigate('Blog')}
-          style={[styles.activityItem, {backgroundColor: '#3C84AC'}]}>
-          <Image
-            style={styles.activityIcon}
-            source={require('../assets/icons/BlogIcon.png')}
-          />
-          <Text style={styles.activityText}>Blogs</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          onPress={() => navigation.navigate('Store')}
-          style={[styles.activityItem, {backgroundColor: '#3C84AC'}]}>
-          <Image
-            style={styles.activityIcon}
-            source={require('../assets/icons/CarteIcon.png')}
-          />
-          <Text style={styles.activityText}>Purchased</Text>
+        <TouchableOpacity onPress={() => navigation.navigate('Reserve')}>
+          <LinearGradient
+            colors={['#0094B4', '#00D9F7']}
+            start={{x: 1, y: 0}}
+            end={{x: 1.1, y: 1}}
+            style={[styles.activityItem, {backgroundColor: '#3C84AC'}]}>
+            <Image
+              style={styles.activityIcon}
+              source={require('../assets/icons/reservationIcon.png')}
+            />
+            <Text style={styles.activityText}>Reservation</Text>
+          </LinearGradient>
         </TouchableOpacity>
       </View>
 
-      <Text style={styles.headingText}>My Bank Details</Text>
+      <View
+        style={[styles.activityContainer, {marginBottom: windowHeight * 0.15}]}>
+        <TouchableOpacity onPress={() => navigation.navigate('Blog')}>
+          <LinearGradient
+            colors={['#0094B4', '#00D9F7']}
+            start={{x: 1, y: 0}}
+            end={{x: 1.1, y: 1}}
+            style={[styles.activityItem, {backgroundColor: '#3C84AC'}]}>
+            <Image
+              style={styles.activityIcon}
+              source={require('../assets/icons/BlogIcon.png')}
+            />
+            <Text style={styles.activityText}>Blogs</Text>
+          </LinearGradient>
+        </TouchableOpacity>
+
+        <TouchableOpacity onPress={() => navigation.navigate('Store')}>
+          <LinearGradient
+            colors={['#0094B4', '#00D9F7']}
+            start={{x: 1, y: 0}}
+            end={{x: 1.1, y: 1}}
+            style={[styles.activityItem, {backgroundColor: '#3C84AC'}]}>
+            <Image
+              style={styles.activityIcon}
+              source={require('../assets/icons/CarteIcon.png')}
+            />
+            <Text style={styles.activityText}>Purchased</Text>
+          </LinearGradient>
+        </TouchableOpacity>
+      </View>
+
+      {/* <Text style={styles.headingText}>My Bank Details</Text>
 
       <View
         style={[
@@ -507,7 +559,7 @@ const Profile = () => {
             </View>
           )}
         </View>
-      </View>
+      </View> */}
     </ScrollView>
   );
 };
@@ -518,11 +570,11 @@ const windowHeight = Dimensions.get('window').height;
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#FFFFFF',
-    height: windowHeight,
+
     width: '100%',
   },
   profileContainer: {
-    height: windowHeight * 0.33,
+    height: windowHeight * 0.29,
     justifyContent: 'center',
     alignItems: 'center',
     width: windowWidth,
@@ -534,31 +586,32 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  logoutImage: {width: 30, resizeMode: 'contain'},
   logoutText: {
     fontSize: 12,
     fontWeight: '500',
     color: '#A2D9FF',
   },
   profileImage: {
-    width: windowWidth * 0.25,
-    height: windowWidth * 0.25,
-    borderRadius: 50,
+    width: windowWidth * 0.27,
+    height: windowWidth * 0.27,
+    borderRadius: 100,
     position: 'absolute',
     bottom: 5,
-    left: windowWidth * 0.379,
+    left: windowWidth * 0.367,
     borderWidth: 3,
     borderColor: '#fff',
   },
   profileName: {
     fontSize: 32,
-    color: '#383E44',
+    color: '#fff',
     fontFamily: 'Poppins-Regular',
     marginBottom: windowHeight * 0.05,
     alignContent: 'center',
   },
   contentContainer: {
     paddingLeft: 42,
-    height: windowHeight * 0.15,
+    height: windowHeight * 0.2,
     justifyContent: 'space-around',
   },
   headingText: {

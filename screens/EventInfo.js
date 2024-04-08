@@ -16,6 +16,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import jwtDecode from 'jwt-decode';
 import Icon from 'react-native-vector-icons/Ionicons';
+Icon.loadFont();
 const EventInfo = ({card, close, getEvents}) => {
   const [isparticipate, setisParticipate] = useState(card.participants);
   const [likes, setlikes] = useState(card.likes);
@@ -150,7 +151,9 @@ const EventInfo = ({card, close, getEvents}) => {
               <View style={styles.LikeContainer}>
                 <Icon name="people" size={windowWidth * 0.07} color="#000" />
                 <Text style={[styles.likedValue, {color: '#000'}]}>
-                  {card.participants.length}
+                  {isparticipate.some(e => e._id === Current._id)
+                    ? card.participants.length + 1
+                    : card.participants.length}
                 </Text>
               </View>
               <View style={styles.LikeContainer}>
@@ -209,13 +212,22 @@ const EventInfo = ({card, close, getEvents}) => {
         <TouchableOpacity
           style={[
             styles.reserveButton,
-            {
-              backgroundColor: `${
-                !isparticipate.some(e => e._id === Current._id)
-                  ? '#FFD466'
-                  : '#c73244'
-              }`,
-            },
+            !isparticipate.some(e => e._id === Current._id)
+              ? {backgroundColor: '#FFD466'}
+              : {
+                  borderRadius: 15,
+                  backgroundColor: '#fff',
+                  borderWidth: 2,
+                  borderColor: '#F68A72',
+                  color: '#F68A72',
+                },
+            // {
+            //   backgroundColor: `${
+            //     !isparticipate.some(e => e._id === Current._id)
+            //       ? '#FFD466'
+            //       : '#c73244'
+            //   }`,
+            // },
           ]}
           onPress={() => {
             isparticipate.some(e => e._id === Current._id)
@@ -226,7 +238,17 @@ const EventInfo = ({card, close, getEvents}) => {
               : (participate(),
                 setisParticipate([...card.participants, Current]));
           }}>
-          <Text style={styles.buttonText}>
+          <Text
+            style={[
+              styles.buttonText,
+              {
+                color: `${
+                  !isparticipate.some(e => e._id === Current._id)
+                    ? '#383E44'
+                    : '#c73244'
+                }`,
+              },
+            ]}>
             {isparticipate.some(e => e._id === Current._id)
               ? 'Cancel'
               : 'Participate'}
@@ -249,14 +271,12 @@ const styles = StyleSheet.create({
   close: {
     position: 'absolute',
     zIndex: 10,
-    marginHorizontal: 20,
+    marginHorizontal: 6,
     marginVertical: 20,
   },
   arrowIcon: {
-    width: 20,
-    height: 20,
+    width: 40,
     resizeMode: 'contain',
-    tintColor: '#0a0a0a',
   },
   imageContainer: {
     width: windowWidth,
@@ -329,18 +349,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 50,
     alignSelf: 'center',
     paddingVertical: 10,
-    width: '85%',
+
     borderRadius: 10,
     elevation: 5,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   RadialEffect: {
     width: '100%',
     height: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   buttonText: {
-    fontSize: 42,
+    fontSize: 26,
     color: '#383E44',
     fontFamily: 'OriginalSurfer-Regular',
   },

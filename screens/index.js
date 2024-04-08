@@ -22,6 +22,7 @@ import AdminStore from './AdminStore';
 import EventAdmin from './EventAdmin';
 import Loading from './Loading';
 import ServicesAdmin from './ServicesAdmin';
+import Notification from './Notification';
 
 export {
   Home,
@@ -48,4 +49,5 @@ export {
   EventAdmin,
   Loading,
   ServicesAdmin,
+  Notification,
 };

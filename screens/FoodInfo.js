@@ -15,12 +15,17 @@ import {url} from '../url';
 import axios from 'axios';
 import jwtDecode from 'jwt-decode';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import LinearGradient from 'react-native-linear-gradient';
+import {useNavigation, useRoute} from '@react-navigation/native';
 
-const FoodInfo = ({card, close, getServices}) => {
+const FoodInfo = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [Current, setCurrent] = useState({});
+  const route = useRoute();
+  const {card} = route.params;
+  const getServices = route.params.getServices;
   const [likes, setlikes] = useState(card.Likes);
-
+  const navigation = useNavigation();
   useEffect(() => {
     getCurrentUser();
 
@@ -31,6 +36,7 @@ const FoodInfo = ({card, close, getServices}) => {
   };
 
   const closeModal = () => {
+    // close();
     setModalVisible(false);
   };
 
@@ -72,7 +78,9 @@ const FoodInfo = ({card, close, getServices}) => {
   };
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.close} onPress={close}>
+      <TouchableOpacity
+        style={styles.close}
+        onPress={() => navigation.goBack()}>
         <Image
           style={styles.arrowIcon}
           source={require('../assets/icons/fleche.png')}
@@ -81,9 +89,7 @@ const FoodInfo = ({card, close, getServices}) => {
 
       <ImageBackground
         style={styles.imageContainer}
-        source={{uri: `${url}${card.image.url}`}}>
-        <Text style={styles.title}>{card.title}</Text>
-      </ImageBackground>
+        source={{uri: `${url}${card.image.url}`}}></ImageBackground>
 
       <View style={styles.infoContainer}>
         <View style={styles.infoRow}>
@@ -110,18 +116,25 @@ const FoodInfo = ({card, close, getServices}) => {
               </TouchableOpacity>
               <Text style={styles.likedValue}>{likes.length}</Text>
             </View>
-            <Text style={styles.price}>{card.price}</Text>
           </View>
+          <Text style={styles.title}>{card.title}</Text>
+
           <Text style={styles.description}>{card.discription}</Text>
         </View>
-
         <TouchableOpacity style={styles.reserveButton} onPress={openModal}>
-          <View
-            style={[styles.RadialEffect, {backgroundColor: '#4698BD'}]}
+          <LinearGradient
+            colors={['#00D9F7', '#0094B4']}
+            start={{x: 0, y: 0}}
+            end={{x: 0.9, y: 0.9}}
+            style={[
+              styles.RadialEffect,
+              {backgroundColor: '#4698BD', flexDirection: 'row'},
+            ]}
             // colors={['#5AC2E3', '#4698BD', '#3C84AC']}
           >
+            <Text style={styles.price}>{card.price} DT</Text>
             <Text style={styles.buttonText}>Reserve</Text>
-          </View>
+          </LinearGradient>
         </TouchableOpacity>
       </View>
 
@@ -147,18 +160,15 @@ const windowHeight = Dimensions.get('window').height;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#fff',
   },
   close: {
     position: 'absolute',
     zIndex: 10,
-    marginHorizontal: 20,
-    marginVertical: 20,
+    marginHorizontal: 10,
+    marginVertical: 40,
   },
-  arrowIcon: {
-    width: 20,
-    height: 20,
-    tintColor: '#fff',
-  },
+  arrowIcon: {width: 50, resizeMode: 'contain', tintColor: '#fff'},
   imageContainer: {
     width: windowWidth,
     height: windowWidth,
@@ -171,7 +181,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     paddingVertical: 20,
     paddingHorizontal: 20,
-    height: windowHeight * 0.45,
+    height: windowHeight * 0.5,
     borderTopLeftRadius: 60,
     justifyContent: 'space-between',
     overflow: 'hidden',
@@ -179,12 +189,14 @@ const styles = StyleSheet.create({
   },
   infoRow: {},
   title: {
-    color: '#FFFFFF',
+    color: '#000',
     fontSize: 46,
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
-    textShadowOffset: {width: -1, height: 1},
-    textShadowRadius: 5,
+
     fontFamily: 'OriginalSurfer-Regular',
+    paddingTop: 10,
+    paddingBottom: 20,
+    marginTop: windowHeight * 0.05,
+    paddingHorizontal: windowWidth * 0.05,
   },
   LikeAndPriceContainer: {
     flexDirection: 'row',
@@ -192,6 +204,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 30,
+    marginTop: 20,
   },
   LikeContainer: {
     flexDirection: 'row',
@@ -205,19 +218,16 @@ const styles = StyleSheet.create({
     marginHorizontal: 10,
   },
   price: {
-    color: '#FFD466',
+    color: '#fff',
     fontSize: 24,
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
-    textShadowOffset: {width: -1, height: 1},
-    textShadowRadius: 1.5,
-    fontFamily: 'OriginalSurfer-Regular',
+    fontFamily: 'Poppins-Medium',
   },
   description: {
     color: '#000',
     fontSize: 16,
     lineHeight: windowHeight * 0.035,
     fontFamily: 'OriginalSurfer-Regular',
-    marginVertical: windowHeight * 0.07,
+    marginBottom: windowHeight * 0.06,
     paddingHorizontal: windowWidth * 0.05,
   },
   buttonContainer: {
@@ -227,9 +237,9 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   reserveButton: {
-    borderRadius: 60,
-    width: '80%',
-    height: windowHeight * 0.09,
+    borderRadius: 15,
+    width: '85%',
+    height: windowHeight * 0.06,
     alignSelf: 'center',
     elevation: 5,
     overflow: 'hidden',
@@ -238,12 +248,13 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 15,
   },
   buttonText: {
-    fontSize: 42,
     color: '#fff',
-    fontFamily: 'OriginalSurfer-Regular',
+    fontSize: 28,
+    fontFamily: 'Poppins-Medium',
   },
   About: {color: '#7f7e81', fontSize: 20, fontWeight: '500'},
   modalContainer: {},

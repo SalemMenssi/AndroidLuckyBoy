@@ -21,6 +21,8 @@ import {
   EventAdmin,
   Loading,
   ServicesAdmin,
+  Notification,
+  FoodInfo,
 } from './screens';
 import messaging from '@react-native-firebase/messaging';
 
@@ -32,39 +34,24 @@ const User = () => {
   return (
     <Tab.Navigator
       screenOptions={({route}) => ({
-        tabBarIcon: ({color, size}) => {
-          let iconName;
-
-          if (route.name === 'Event') {
-            iconName = 'star-o';
-          } else if (route.name === 'Profil') {
-            iconName = 'user-o';
-          } else if (route.name === 'Blog') {
-            iconName = 'wechat';
-          } else if (route.name === 'Store') {
-            iconName = 'shopping-bag';
-          } else if (route.name === 'Reserve') {
-            iconName = 'calendar-o';
-          } else if (route.name === 'Service') {
-            iconName = 'calendar';
-          }
-
-          return <Icon name={iconName} size={size} color={color} />;
-        },
         tabBarActiveTintColor: '#3C84AC',
 
         tabBarInactiveTintColor: '#383E44',
         tabBarStyle: {
           position: 'absolute',
-          elevation: 50,
+          elevation: 10,
           shadowOffset: {
             width: 0,
             height: 15,
           },
           shadowOpacity: 1,
-          shadowRadius: 16.0,
+          shadowRadius: 16.5,
           shadowColor: '#000',
           borderTopLeftRadius: 21,
+          borderTopWidth: 3,
+          borderLeftWidth: 1,
+          borderRightWidth: 1,
+          borderColor: '#d8d8d8',
           borderTopRightRadius: 21,
           backgroundColor: '#fff',
           borderTopLeftRadius: 60,
@@ -350,7 +337,8 @@ const MyStack = () => {
       screenOptions={{headerShown: false}}
       initialRouteName="Home">
       <Stack.Screen name="SignIn" component={SignIn} />
-      <Stack.Screen name="SignUp" component={SignUp} />
+      <Stack.Screen name="ReservationCard" component={FoodInfo} />
+      <Stack.Screen name="Notif" component={Notification} />
       <Stack.Screen name="User" component={User} />
       <Stack.Screen name="Admin" component={Admin} />
       <Stack.Screen name="Home" component={Home} />

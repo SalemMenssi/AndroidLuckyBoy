@@ -12,6 +12,7 @@ import {
 import RadialGradient from 'react-native-radial-gradient';
 import {url} from '../../url';
 import axios from 'axios';
+import LinearGradient from 'react-native-linear-gradient';
 
 const PayReservation = ({card, close, getBookings}) => {
   const [modalVisible, setModalVisible] = useState(false);
@@ -68,33 +69,39 @@ const PayReservation = ({card, close, getBookings}) => {
   };
 
   return (
-    <View
-      style={{height: windowHeight * 0.7, backgroundColor: '#3C84AC'}}
-      // colors={['#3C84AC', '#5AC2E3', '#3C84AC']}
-    >
-      <TouchableOpacity style={styles.return} onPress={close}>
-        <Image
-          style={styles.arrowIcon}
-          source={require('../../assets/icons/fleche.png')}
-        />
-      </TouchableOpacity>
+    <View>
+      <LinearGradient
+        colors={['#0094B4', '#00DaF8']}
+        start={{x: 0, y: 0}}
+        end={{x: 1, y: 1}}
+        style={{height: windowHeight * 0.7, justifyContent: 'center'}}>
+        <TouchableOpacity style={styles.return} onPress={close}>
+          <Image
+            style={styles.arrowIcon}
+            source={require('../../assets/icons/fleche.png')}
+          />
+        </TouchableOpacity>
 
-      <Text style={styles.heading}>Well Done!</Text>
-      <Image
-        style={styles.imageStyle}
-        source={require('../../assets/images/friends.png')}
-      />
-      <Text style={styles.sub}>
-        Hope you will have good time{'\n'}with Lucky boy!{'\n'}Thank you for
-        being a valued{'\n'}customer!
-      </Text>
+        <Image
+          style={styles.imageStyle}
+          source={require('../../assets/images/friends.png')}
+        />
+        <Text style={styles.heading}>Well Done!</Text>
+        <Text style={styles.sub}>
+          Hope you will have good time{'\n'}with Lucky boy!{'\n'}Thank you for
+          being a valued{'\n'}customer!
+        </Text>
+      </LinearGradient>
       <TouchableOpacity style={styles.reserveButton}>
-        <View
+        <LinearGradient
+          colors={['#00DaF8', '#0094B4']}
+          start={{x: 0, y: 0}}
+          end={{x: 0.9, y: 0.9}}
           style={[styles.RadialEffect, {backgroundColor: '#FFC444'}]}
           // colors={['#FFC444', '#FEE6C2', '#FFC444']}
         >
-          <Text style={styles.buttonText}>Pay</Text>
-        </View>
+          <Text style={styles.buttonText}>Payment</Text>
+        </LinearGradient>
       </TouchableOpacity>
     </View>
   );
@@ -103,22 +110,25 @@ const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 
 const styles = StyleSheet.create({
-  arrowIcon: {},
+  arrowIcon: {width: 40, resizeMode: 'contain', tintColor: '#fff'},
   heading: {
     alignSelf: 'center',
     fontSize: 36,
-    fontFamily: 'OriginalSurfer-Regular',
-    color: '#FFD466',
-    marginVertical: windowHeight * 0.1,
+    fontFamily: 'Poppins-Medium',
+    color: '#fff',
+    marginTop: 20,
   },
   sub: {
     alignSelf: 'center',
     fontSize: 20,
     textAlign: 'center',
     color: '#fff',
+
+    fontFamily: 'Poppins-Medium',
+
     marginTop: windowHeight * 0.05,
     fontWeight: '500',
-    lineHeight: windowHeight * 0.04,
+    lineHeight: windowHeight * 0.03,
   },
   subheading: {
     textAlign: 'center',
@@ -127,9 +137,10 @@ const styles = StyleSheet.create({
     color: '#000000',
   },
   imageStyle: {
-    width: 143,
-    height: 143,
+    width: windowWidth * 0.5,
+    height: windowWidth * 0.5,
     alignSelf: 'center',
+    marginTop: windowHeight * 0.1,
   },
   activitie: {
     marginTop: windowHeight * 0.05,
@@ -170,9 +181,9 @@ const styles = StyleSheet.create({
   },
 
   reserveButton: {
-    borderRadius: 60,
-    width: '50%',
-    height: windowHeight * 0.09,
+    borderRadius: 12,
+    width: '40%',
+    height: windowHeight * 0.07,
     alignSelf: 'center',
     elevation: 5,
     overflow: 'hidden',
@@ -185,9 +196,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   buttonText: {
-    fontSize: 42,
-    color: '#383E44',
-    fontFamily: 'OriginalSurfer-Regular',
+    fontSize: 26,
+    color: '#fff',
+    fontFamily: 'Poppins-Medium',
   },
   activitiesInfo: {
     flexDirection: 'row',
@@ -201,7 +212,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     paddingVertical: 10,
   },
-  return: {padding: 10, position: 'absolute', marginTop: 10, marginLeft: 10},
+  return: {padding: 10, position: 'absolute', top: 40, marginLeft: 0},
   modalContainer: {
     flex: 1,
     justifyContent: 'center',
